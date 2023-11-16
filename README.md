@@ -1,0 +1,2 @@
+# WorkerJS_CloudFlare_ImageBed
+基于CloudFlare Worker的JS，多个图床示例
