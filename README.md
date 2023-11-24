@@ -11,6 +11,6 @@
 - 20230924 首发 tgphimgjs https://gist.github.com/BlueSkyXN/8d261d13d79e7a7672999f9935acdfe9/revisions
 - 20231006 首发 tgph批量上传 https://gist.github.com/BlueSkyXN/969c20bf0378ef39cb09793bfab1ca80/revisions
 - 20231020 首发 163imgjs https://gist.github.com/BlueSkyXN/b0c06952bd402545abedcb0ee73d05d9/revisions
-- 20231123 证实3001图床要求登录 ``{"data":[],"code":401,"msg":"请先登录"}``
-- 20231123 首发 58imgpy
+- 20231123 证实3001图床要求登录 ``{"data":[],"code":401,"msg":"请先登录"}`` 然后首发 58imgpy
+- 20231124 通过163imgpy验证了接口失效``no healthy upstream``，新增 weixinyanxuan.com 的玩具py，js实现失败
 
