@@ -128,8 +128,10 @@ addEventListener('fetch', event => {
           imageUrl.replace('https://telegra.ph', 'https://i1.wp.com/telegraph.cachefly.net'),
           imageUrl.replace('https://telegra.ph', 'https://i2.wp.com/im.gurl.eu.org'),
           imageUrl.replace('https://telegra.ph', 'https://i3.wp.com/missuo.ru'),
+          imageUrl.replace('https://telegra.ph', 'https://image.baidu.com/search/down?url=https://i3.wp.com/missuo.ru'),
+          imageUrl.replace('https://telegra.ph', 'https://images.weserv.nl/?url=https://missuo.ru'),
+          imageUrl.replace('https://telegra.ph', 'https://pic1.xuehuaimg.com/proxy/https://i0.wp.com/missuo.ru'),
           imageUrl.replace('https://telegra.ph', 'https://im.gurl.eu.org'),
-          imageUrl.replace('https://telegra.ph', 'https://image.196629.xyz'),
           imageUrl.replace('https://telegra.ph', 'https://img1.131213.xyz'),
           imageUrl.replace('https://telegra.ph', 'https://missuo.ru')
         ];
