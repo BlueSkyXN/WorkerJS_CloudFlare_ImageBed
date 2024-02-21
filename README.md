@@ -13,4 +13,5 @@
 - 20231020 首发 163imgjs https://gist.github.com/BlueSkyXN/b0c06952bd402545abedcb0ee73d05d9/revisions
 - 20231123 证实3001图床要求登录 ``{"data":[],"code":401,"msg":"请先登录"}`` 然后首发 58imgpy
 - 20231124 通过163imgpy验证了接口失效``no healthy upstream``，新增 weixinyanxuan.com 的玩具py，js实现失败
-
+- 20240219 如果需要进一步加速图片的，还可以参考 《公开免费无限的图片加速代理接口》 [https://www.blueskyxn.com/202402/7006.html](https://www.blueskyxn.com/202402/7006.html)
+- 20240220 如果使用CloudFlareR2对象存储的，还可以参考 [https://github.com/BlueSkyXN/CF-R2-WorkerJS](https://github.com/BlueSkyXN/CF-R2-WorkerJS) 来进行优化 
