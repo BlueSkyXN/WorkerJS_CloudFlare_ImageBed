@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TGPH Image Hosting</title>
+    <style>
+        footer {
+            font-size: 12px; /* 设置较小的字号 */
+        }
+        hr {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>TGPH Image Hosting</h1>
+    <hr>
+    <form id="uploadForm">
+        <input type="file" name="file" id="fileInput" required />
+        <select name="apiOption" id="apiOption">
+            <option value="https://telegra.ph/upload">TGPH-Official</option>
+            <option value="https://telegraph.cachefly.net/upload">TGPH-Cachefly</option>
+        </select>
+        <button type="submit">Upload</button>
+    </form>
+    <input type="checkbox" id="subOption" />
+    <label for="subOption">Enable TGPH-SUB</label>
+    <hr>
+    <div id="result"></div>
+    <button id="copyButton" style="display:none;">Copy</button>
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('file', document.getElementById('fileInput').files[0]);
+            const apiOption = document.getElementById('apiOption').value;
+
+            try {
+                const response = await fetch(apiOption, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                const imageUrl = 'https://telegra.ph' + data[0].src;
+                processImage(imageUrl);
+            } catch (error) {
+                console.error('Upload failed:', error);
+            }
+        });
+
+        function processImage(imageUrl) {
+            document.getElementById('result').innerHTML = 'URL: <a href="' + imageUrl + '" target="_blank">' + imageUrl + '</a>';
+            document.getElementById('copyButton').style.display = 'inline';
+
+            if (document.getElementById('subOption').checked) {
+                generateSubUrls(imageUrl).forEach(url => {
+                    const urlElement = document.createElement('div');
+                    urlElement.innerHTML = 'URL: <a href="' + url + '" target="_blank">' + url + '</a>';
+                    document.getElementById('result').appendChild(urlElement);
+                });
+            }
+
+            document.getElementById('copyButton').addEventListener('click', function() {
+                navigator.clipboard.writeText(imageUrl).then(() => {
+                    alert('Image URL copied to clipboard!');
+                });
+            });
+        }
+
+        function generateSubUrls(imageUrl) {
+            return [
+                imageUrl.replace('https://telegra.ph', 'https://telegraph.cachefly.net'),
+                // 添加其他替换规则...
+            ];
+        }
+    </script>
+    <hr>
+    <footer>
+        <p>建议上传5M以内的JPG/PNG/JPEG/GIF图像、MP4视频</p>
+        <p>文件格式兼容：jpg/jpeg/png/gif/m4v/mp4/jfif/pjpeg</p>
+        <p>注意不兼容webp/mkv等格式和非图像视频格式的文件、大于5MB的文件</p>
+        <p>该源码开源，仅供学习JS使用，违规使用后果自负</p>
+    </footer>
+</body>
+</html>
