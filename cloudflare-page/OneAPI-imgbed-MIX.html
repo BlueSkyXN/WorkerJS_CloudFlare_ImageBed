@@ -16,7 +16,7 @@
             padding: 10px;
             border-radius: 5px;
             display: flex;
-            flex-direction: column; /* 不同框之间纵向排列 */
+            flex-direction: column; /* 修改这里 */
         }
         .preview-container {
             max-width: calc(100% - 20px); /* 图片预览容器的最大宽度为外部框架宽度减去左右 padding */
@@ -86,7 +86,9 @@
 
             // 清除旧的结果
             resultContainer.innerHTML = '';
-            resultContainer.style.display = 'none';
+
+            resultContainer.style.display = 'block'; // 修改这里
+
 
             for (const file of fileInput.files) {
                 const formData = new FormData();
