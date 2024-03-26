@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // 设置源文件和目标文件的路径
-const srcPath = path.join(__dirname, '..', '..', 'cloudflare-page', 'OneAPI-imgbed.html');
+const srcPath = path.join(__dirname, '..', '..', 'cloudflare-page', 'OneAPI-imgbed-MIX.html');
 const destDir = path.join(__dirname, '..', '..', 'dist');
 const destPath = path.join(destDir, 'index.html');
 

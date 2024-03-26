@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件上传</title>
+    <!-- 引入 Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+        .result-container {
+            display: flex;
+            flex-direction: column;
+            margin-top: 10px;
+        }
+        .result-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>文件上传</h2>
+        <form id="upload-form">
+            <div class="form-group">
+                <label for="apiUrl">API 域名（请包含完整http开头，域名结尾不需要斜杠）：</label>
+                <input type="text" class="form-control" id="apiUrl" placeholder="输入 API 域名" required>
+            </div>
+            <div class="form-group">
+                <label for="fileInput">选择文件</label>
+                <input type="file" class="form-control-file" id="fileInput" multiple required>
+            </div>
+            <div class="form-group">
+                <label for="apiSelect">选择接口</label>
+                <select class="form-control" id="apiSelect">
+                    <option value="58img">api-58img</option>
+                    <option value="tgphimg">api-tgph-official</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">上传</button>
+        </form>
+        <div id="result" class="result-container" style="display: none;">
+            <!-- 动态添加上传结果 -->
+        </div>
+    </div>
+
+    <!-- 引入 jQuery 和 Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const apiUrlInput = document.getElementById('apiUrl');
+            const fileInput = document.getElementById('fileInput');
+            const apiSelect = document.getElementById('apiSelect');
+            const resultContainer = document.getElementById('result');
+
+            // 清除旧的结果
+            resultContainer.innerHTML = '';
+            resultContainer.style.display = 'none';
+
+            const uploadPromises = [];
+
+            for (const file of fileInput.files) {
+                const formData = new FormData();
+                formData.append('image', file);
+
+                const apiUrl = `${apiUrlInput.value}/upload/${apiSelect.value}`;
+                console.log('API URL:', apiUrl);
+
+                const uploadPromise = fetch(apiUrl, {
+                    method: 'POST',
+                    body: formData,
+                }).then(response => response.text());
+                uploadPromises.push(uploadPromise);
+            }
+
+            Promise.allSettled(uploadPromises).then(results => {
+                results.forEach((result, index) => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+
+                    if (result.status === 'fulfilled') {
+                        resultItem.innerHTML = `
+                            <button class="btn btn-success mr-2" onclick="copyUrl(this)">复制 URL</button>
+                            <input type="text" class="form-control" value="${result.value}" readonly>
+                        `;
+                    } else {
+                        resultItem.innerHTML = `<input type="text" class="form-control" value="文件${index + 1}上传失败" readonly>`;
+                    }
+
+                    resultContainer.appendChild(resultItem);
+                });
+                resultContainer.style.display = 'flex';
+            });
+        });
+
+        function copyUrl(button) {
+            const copyText = button.nextElementSibling;
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            alert('URL 已复制');
+        }
+    </script>
+</body>
+</html>
