@@ -1,0 +1,13 @@
+{
+    "name": "workerjscloudflareimagebed",
+    "version": "1.0.0",
+    "description": "workerjscloudflareimagebed",
+    "main": "index.js",
+    "scripts": {
+      "build": "node cloudflare-page-build/scripts/quick-build.js"
+    },
+    "author": "BlueSkyXN",
+    "license": "GPLv3",
+    "dependencies": {}
+  }
+  

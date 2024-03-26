@@ -17,7 +17,7 @@
         <h2>文件上传</h2>
         <form id="upload-form">
             <div class="form-group">
-                <label for="apiUrl">API 域名：</label>
+                <label for="apiUrl">API 域名（请包含完整http开头，域名结尾不需要斜杠）：</label>
                 <input type="text" class="form-control" id="apiUrl" placeholder="输入 API 域名" required>
             </div>
             <div class="form-group">
@@ -57,7 +57,7 @@
             // 使用用户输入的 API 域名和选择的接口构造完整的 URL
             const apiUrl = `${apiUrlInput.value}/upload/${apiSelect.value}`;
             console.log('API URL:', apiUrl);
-            
+
             fetch(apiUrl, {
                 method: 'POST',
                 body: formData,
