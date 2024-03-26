@@ -56,7 +56,8 @@
 
             // 使用用户输入的 API 域名和选择的接口构造完整的 URL
             const apiUrl = `${apiUrlInput.value}/upload/${apiSelect.value}`;
-
+            console.log('API URL:', apiUrl);
+            
             fetch(apiUrl, {
                 method: 'POST',
                 body: formData,
