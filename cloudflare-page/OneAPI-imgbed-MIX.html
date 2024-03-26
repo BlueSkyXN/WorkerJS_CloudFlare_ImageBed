@@ -17,12 +17,13 @@
             border-radius: 5px;
             display: flex;
             align-items: center;
-            flex-grow: 1; /* 使复制按钮填充剩余空间 */
+            flex-wrap: wrap; /* 允许多行显示 */
         }
         .preview-container {
-            max-width: calc(100% - 100px); /* 图片预览容器的最大宽度为外部框架宽度减去按钮的宽度 */
+            max-width: calc(100% - 120px); /* 图片预览容器的最大宽度为外部框架宽度减去按钮和文件名的宽度 */
             max-height: calc(8 * 50px); /* 最大高度不超过8个上传按钮的高度 */
             overflow: hidden; /* 超出部分隐藏 */
+            margin-top: 10px;
         }
         .preview-img {
             max-width: 100%; /* 图片预览的最大宽度为容器宽度 */
@@ -30,7 +31,8 @@
             display: block; /* 防止图片下面产生空白 */
         }
         .copy-button {
-            width: auto;
+            width: 100px; /* 设置复制按钮的宽度 */
+            margin-right: 10px; /* 添加一些右侧边距 */
         }
     </style>
 </head>
@@ -100,8 +102,8 @@
                     const resultItem = document.createElement('div');
                     resultItem.className = 'result-item';
                     resultItem.innerHTML = `
-                        <button class="btn btn-success mr-2 copy-button" onclick="copyUrl(this)">复制URL</button>
-                        <span class="mr-2">${file.name}</span>
+                        <button class="btn btn-success copy-button" onclick="copyUrl(this)">复制URL</button>
+                        <span>${file.name}</span>
                         <div class="preview-container">
                             <img src="${data}" class="preview-img">
                         </div>
