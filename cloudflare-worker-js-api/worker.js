@@ -1,66 +1,106 @@
 addEventListener('fetch', event => {
-    event.respondWith(handleRequest(event.request));
-  })
+    const request = event.request;
+    if (request.method.toUpperCase() === "OPTIONS") {
+      // 处理预检请求
+      event.respondWith(handleOptions(request));
+    } else {
+      // 处理常规请求
+      event.respondWith(handleRequest(request));
+    }
+  });
   
+  // 处理常规请求
   async function handleRequest(request) {
     const url = new URL(request.url);
-    
-    // 根据请求路径调用相应的处理函数
+  
+    let response;
     switch (url.pathname) {
       case '/upload/58img':
-        return handle58imgRequest(request);
+        response = await handle58imgRequest(request);
+        break;
       case '/upload/tgphimg':
-        return handleTgphimgRequest(request);
+        response = await handleTgphimgRequest(request);
+        break;
       default:
-        return new Response('Not Found', { status: 404 });
+        response = new Response('Not Found', { status: 404 });
+        break;
     }
+  
+    // 添加 CORS 头到响应中
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    return response;
   }
   
+  // 处理预检请求
+  function handleOptions(request) {
+    // 确保预检请求的访问控制请求头在允许的范围内
+    let headers = request.headers;
+    if (headers.get('Origin') !== null &&
+        headers.get('Access-Control-Request-Method') !== null &&
+        headers.get('Access-Control-Request-Headers') !== null) {
+      // 处理 CORS 预检请求
+      let respHeaders = new Headers({
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': headers.get('Access-Control-Request-Headers'),
+        'Access-Control-Max-Age': '86400', // 1 day
+      });
+  
+      return new Response(null, { headers: respHeaders });
+    } else {
+      // 处理非预检请求
+      return new Response(null, {
+        headers: {
+          'Allow': 'GET, POST, OPTIONS',
+        },
+      });
+    }
+  }
   async function handle58imgRequest(request) {
     // 确认请求方法为 POST 并且内容类型正确
     if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
       return new Response('Invalid request', { status: 400 });
     }
-      // 解析表单数据
-      const formData = await request.formData();
-      const imageFile = formData.get('image'); // 假设字段名为 'image'
-      if (!imageFile) return new Response('Image file not found', { status: 400 });
-    
-      // 将文件数据转换为 ArrayBuffer
-      const arrayBuffer = await imageFile.arrayBuffer();
-    
-      // 将 ArrayBuffer 转换为 Base64
-      const base64EncodedData = bufferToBase64(arrayBuffer);
-    
-      // 构建请求负载
-      const payload = {
-        "Pic-Size": "0*0",
-        "Pic-Encoding": "base64",
-        "Pic-Path": "/nowater/webim/big/",
-        "Pic-Data": base64EncodedData
-      };
-    
-      // 目标URL
-      const targetUrl = "https://upload.58cdn.com.cn/json/nowater/webim/big/";
-    
-      // 发送POST请求
-      const response = await fetch(targetUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    
-      // 处理响应
-      if (response.ok) {
-        const result = await response.text();
-        // 随机生成1到8之间的数字
-        const random_number = Math.floor(Math.random() * 8) + 1;
-        const finalUrl = `https://pic${random_number}.58cdn.com.cn/nowater/webim/big/${result}`;
-        return new Response(finalUrl);
-      } else {
-        return new Response("Error: " + await response.text(), { status: response.status });
-      }
-    
+  
+    // 解析表单数据
+    const formData = await request.formData();
+    const imageFile = formData.get('image'); // 假设字段名为 'image'
+    if (!imageFile) return new Response('Image file not found', { status: 400 });
+  
+    // 将文件数据转换为 ArrayBuffer
+    const arrayBuffer = await imageFile.arrayBuffer();
+  
+    // 将 ArrayBuffer 转换为 Base64
+    const base64EncodedData = bufferToBase64(arrayBuffer);
+  
+    // 构建请求负载
+    const payload = {
+      "Pic-Size": "0*0",
+      "Pic-Encoding": "base64",
+      "Pic-Path": "/nowater/webim/big/",
+      "Pic-Data": base64EncodedData
+    };
+  
+    // 目标URL
+    const targetUrl = "https://upload.58cdn.com.cn/json/nowater/webim/big/";
+  
+    // 发送POST请求
+    const response = await fetch(targetUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  
+    // 处理响应
+    if (response.ok) {
+      const result = await response.text();
+      // 随机生成1到8之间的数字
+      const random_number = Math.floor(Math.random() * 8) + 1;
+      const finalUrl = `https://pic${random_number}.58cdn.com.cn/nowater/webim/big/${result}`;
+      return new Response(finalUrl);
+    } else {
+      return new Response("Error: " + await response.text(), { status: response.status });
+    }
   }
   
   async function handleTgphimgRequest(request) {
@@ -68,6 +108,7 @@ addEventListener('fetch', event => {
     if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
       return new Response('Invalid request', { status: 400 });
     }
+  
     // 解析表单数据
     const formData = await request.formData();
     const imageFile = formData.get('image'); // 假设字段名为 'image'
