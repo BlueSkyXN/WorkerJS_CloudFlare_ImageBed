@@ -16,13 +16,15 @@
             padding: 10px;
             border-radius: 5px;
             display: flex;
-            flex-direction: column; /* 修改这里 */
+            flex-direction: column; /* 不同框之间纵向排列 */
+            width: 100%; /* 设置结果框宽度为100% */
         }
         .preview-container {
             max-width: calc(100% - 20px); /* 图片预览容器的最大宽度为外部框架宽度减去左右 padding */
             max-height: calc(8 * 50px); /* 最大高度不超过8个上传按钮的高度 */
             overflow: hidden; /* 超出部分隐藏 */
             margin-top: 10px; /* 添加顶部间距 */
+            width: 100%; /* 设置预览容器宽度为100% */
         }
         .preview-img {
             max-width: 100%; /* 图片预览的最大宽度为容器宽度 */
@@ -86,9 +88,7 @@
 
             // 清除旧的结果
             resultContainer.innerHTML = '';
-
-            resultContainer.style.display = 'block'; // 修改这里
-
+            resultContainer.style.display = 'none';
 
             for (const file of fileInput.files) {
                 const formData = new FormData();
@@ -105,7 +105,7 @@
                 .then(data => {
                     const resultItem = document.createElement('div');
                     resultItem.className = 'result-item';
-                    resultItem.innerHTML = `
+                    const resultContent = `
                         <div>
                             <button class="btn btn-success mr-2 copy-button" onclick="copyUrl(this)">复制URL</button>
                             <span class="mr-2 file-name">${file.name}</span>
@@ -114,6 +114,7 @@
                             <input type="text" class="form-control" value="${data}" readonly>
                         </div>
                     `;
+                    resultItem.innerHTML = resultContent;
 
                     if (enablePreview) {
                         const preview = document.createElement('div');
@@ -126,7 +127,7 @@
                     }
 
                     resultContainer.appendChild(resultItem);
-                    resultContainer.style.display = 'flex';
+                    resultContainer.style.display = 'block';
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -134,7 +135,7 @@
                     resultItem.className = 'result-item';
                     resultItem.innerHTML = `<input type="text" class="form-control" value="文件 ${file.name} 上传失败" readonly>`;
                     resultContainer.appendChild(resultItem);
-                    resultContainer.style.display = 'flex';
+                    resultContainer.style.display = 'block';
                 });
             }
         });
