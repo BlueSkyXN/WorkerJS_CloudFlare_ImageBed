@@ -15,10 +15,17 @@
             border: 1px solid #ccc;
             padding: 10px;
             border-radius: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .copy-button {
+            width: 70%;
+            margin-bottom: 10px;
         }
         .preview-img {
-            max-width: 100px;
-            max-height: 100px;
+            max-width: 400%;
+            max-height: 400%;
             margin-top: 10px;
         }
     </style>
@@ -71,6 +78,7 @@
 
             // 清除旧的结果
             resultContainer.innerHTML = '';
+            resultContainer.style.display = 'none';
 
             for (const file of fileInput.files) {
                 const formData = new FormData();
@@ -87,51 +95,38 @@
                 .then(data => {
                     const resultItem = document.createElement('div');
                     resultItem.className = 'result-item';
-
-                    const fileNameSpan = document.createElement('span');
-                    fileNameSpan.innerText = file.name + ': ';
-                    resultItem.appendChild(fileNameSpan);
-
-                    const copyButton = document.createElement('button');
-                    copyButton.className = 'btn btn-success mr-2';
-                    copyButton.innerText = '复制URL';
-                    copyButton.onclick = function() {
-                        copyUrl(this);
-                    };
-                    resultItem.appendChild(copyButton);
-
-                    const urlInput = document.createElement('input');
-                    urlInput.type = 'text';
-                    urlInput.className = 'form-control mb-2';
-                    urlInput.value = data;
-                    urlInput.readOnly = true;
-                    resultItem.appendChild(urlInput);
+                    resultItem.innerHTML = `
+                        <button class="btn btn-success mr-2 copy-button" onclick="copyUrl(this)">复制URL</button>
+                        <span class="mr-2">${file.name}</span>
+                        <input type="text" class="form-control" value="${data}" readonly>
+                    `;
 
                     if (enablePreview) {
-                        const previewImg = document.createElement('img');
-                        previewImg.src = data;
-                        previewImg.className = 'preview-img';
-                        resultItem.appendChild(previewImg);
+                        const preview = document.createElement('img');
+                        preview.src = data;
+                        preview.className = 'preview-img';
+                        resultItem.appendChild(preview);
                     }
 
                     resultContainer.appendChild(resultItem);
+                    resultContainer.style.display = 'flex';
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     const resultItem = document.createElement('div');
                     resultItem.className = 'result-item';
-                    resultItem.innerText = `文件 ${file.name} 上传失败`;
+                    resultItem.innerHTML = `<input type="text" class="form-control" value="文件 ${file.name} 上传失败" readonly>`;
                     resultContainer.appendChild(resultItem);
+                    resultContainer.style.display = 'flex';
                 });
             }
         });
 
         function copyUrl(button) {
-            const urlInput = button.nextElementSibling;
-            urlInput.select();
-            urlInput.setSelectionRange(0, 99999);
+            const copyText = button.nextElementSibling.nextElementSibling;
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
             document.execCommand('copy');
-            alert('URL 已复制');
         }
     </script>
 </body>
