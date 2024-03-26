@@ -17,11 +17,17 @@
             border-radius: 5px;
             display: flex;
             align-items: center;
+            flex-grow: 1; /* 使复制按钮填充剩余空间 */
+        }
+        .preview-container {
+            max-width: calc(100% - 100px); /* 图片预览容器的最大宽度为外部框架宽度减去按钮的宽度 */
+            max-height: calc(8 * 50px); /* 最大高度不超过8个上传按钮的高度 */
+            overflow: hidden; /* 超出部分隐藏 */
         }
         .preview-img {
-            max-height: calc(8 * 50px); /* 最大高度不超过8个上传按钮的高度 */
-            max-width: 100%; /* 横向不超过外部框架的大小 */
-            margin-top: 10px;
+            max-width: 100%; /* 图片预览的最大宽度为容器宽度 */
+            height: auto; /* 自适应高度 */
+            display: block; /* 防止图片下面产生空白 */
         }
         .copy-button {
             width: auto;
@@ -66,66 +72,62 @@
 
     <script>
         document.getElementById('upload-form').addEventListener('submit', function(e) {
-        e.preventDefault();
+            e.preventDefault();
 
-        const apiUrlInput = document.getElementById('apiUrl');
-        const fileInput = document.getElementById('fileInput');
-        const apiSelect = document.getElementById('apiSelect');
-        const resultContainer = document.getElementById('result');
-        const enablePreview = document.getElementById('enablePreview').checked;
+            const apiUrlInput = document.getElementById('apiUrl');
+            const fileInput = document.getElementById('fileInput');
+            const apiSelect = document.getElementById('apiSelect');
+            const resultContainer = document.getElementById('result');
+            const enablePreview = document.getElementById('enablePreview').checked;
 
-        // 清除旧的结果
-        resultContainer.innerHTML = '';
-        resultContainer.style.display = 'none';
+            // 清除旧的结果
+            resultContainer.innerHTML = '';
+            resultContainer.style.display = 'none';
 
-        for (const file of fileInput.files) {
-            const formData = new FormData();
-            formData.append('image', file);
+            for (const file of fileInput.files) {
+                const formData = new FormData();
+                formData.append('image', file);
 
-            const apiUrl = `${apiUrlInput.value}/upload/${apiSelect.value}`;
-            console.log('API URL:', apiUrl);
+                const apiUrl = `${apiUrlInput.value}/upload/${apiSelect.value}`;
+                console.log('API URL:', apiUrl);
 
-            fetch(apiUrl, {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => response.text())
-            .then(data => {
-                const resultItem = document.createElement('div');
-                resultItem.className = 'result-item';
-                resultItem.innerHTML = `
-                    <button class="btn btn-success mr-2 copy-button" onclick="copyUrl(this)">复制URL</button>
-                    <span class="mr-2">${file.name}</span>
-                    <input type="text" class="form-control" value="${data}" readonly>
-                `;
+                fetch(apiUrl, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.text())
+                .then(data => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    resultItem.innerHTML = `
+                        <button class="btn btn-success mr-2 copy-button" onclick="copyUrl(this)">复制URL</button>
+                        <span class="mr-2">${file.name}</span>
+                        <div class="preview-container">
+                            <img src="${data}" class="preview-img">
+                        </div>
+                        <input type="text" class="form-control" value="${data}" readonly>
+                    `;
 
-                if (enablePreview) {
-                    const preview = document.createElement('img');
-                    preview.src = data;
-                    preview.className = 'preview-img';
-                    resultItem.appendChild(preview);
-                }
+                    resultContainer.appendChild(resultItem);
+                    resultContainer.style.display = 'flex';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    resultItem.innerHTML = `<input type="text" class="form-control" value="文件 ${file.name} 上传失败" readonly>`;
+                    resultContainer.appendChild(resultItem);
+                    resultContainer.style.display = 'flex';
+                });
+            }
+        });
 
-                resultContainer.appendChild(resultItem);
-                resultContainer.style.display = 'flex';
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                const resultItem = document.createElement('div');
-                resultItem.className = 'result-item';
-                resultItem.innerHTML = `<input type="text" class="form-control" value="文件 ${file.name} 上传失败" readonly>`;
-                resultContainer.appendChild(resultItem);
-                resultContainer.style.display = 'flex';
-            });
+        function copyUrl(button) {
+            const copyText = button.nextElementSibling.nextElementSibling;
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            document.execCommand('copy');
         }
-    });
-
-    function copyUrl(button) {
-        const copyText = button.nextElementSibling.nextElementSibling;
-        copyText.select();
-        copyText.setSelectionRange(0, 99999);
-        document.execCommand('copy');
-    }
     </script>
 </body>
 </html>
