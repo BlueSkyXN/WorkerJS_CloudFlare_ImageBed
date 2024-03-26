@@ -11,14 +11,15 @@
             margin-top: 50px;
         }
         .result-item {
-            display: flex;
-            align-items: center;
             margin-top: 10px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
         }
         .preview-img {
             max-width: 100px;
             max-height: 100px;
-            margin-right: 10px;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -60,68 +61,74 @@
 
     <script>
         document.getElementById('upload-form').addEventListener('submit', function(e) {
-        e.preventDefault();
+            e.preventDefault();
 
-        const apiUrlInput = document.getElementById('apiUrl');
-        const fileInput = document.getElementById('fileInput');
-        const apiSelect = document.getElementById('apiSelect');
-        const resultContainer = document.getElementById('result');
-        const enablePreview = document.getElementById('enablePreview').checked;
+            const apiUrlInput = document.getElementById('apiUrl');
+            const fileInput = document.getElementById('fileInput');
+            const apiSelect = document.getElementById('apiSelect');
+            const resultContainer = document.getElementById('result');
+            const enablePreview = document.getElementById('enablePreview').checked;
 
-        // 清除旧的结果
-        resultContainer.innerHTML = '';
-        resultContainer.style.display = 'none';
+            // 清除旧的结果
+            resultContainer.innerHTML = '';
 
-        for (const file of fileInput.files) {
-            const formData = new FormData();
-            formData.append('image', file);
+            for (const file of fileInput.files) {
+                const formData = new FormData();
+                formData.append('image', file);
 
-            const apiUrl = `${apiUrlInput.value}/upload/${apiSelect.value}`;
-            console.log('API URL:', apiUrl);
+                const apiUrl = `${apiUrlInput.value}/upload/${apiSelect.value}`;
+                console.log('API URL:', apiUrl);
 
-            fetch(apiUrl, {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => response.text())
-            .then(data => {
-                const resultItem = document.createElement('div');
-                resultItem.className = 'result-item';
-                resultItem.innerHTML = `
-                    <button class="btn btn-success mr-2" onclick="copyUrl(this)">复制URL</button>
-                    <span class="mr-2">${file.name}</span>
-                    <input type="text" class="form-control" value="${data}" readonly>
-                `;
+                fetch(apiUrl, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.text())
+                .then(data => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
 
-                if (enablePreview) {
-                    const preview = document.createElement('img');
-                    preview.src = data;
-                    preview.style.maxWidth = '200px';
-                    preview.style.maxHeight = '200px';
-                    preview.className = 'mt-2';
-                    resultItem.appendChild(preview);
-                }
+                    const fileNameSpan = document.createElement('span');
+                    fileNameSpan.innerText = file.name + ': ';
+                    resultItem.appendChild(fileNameSpan);
 
-                resultContainer.appendChild(resultItem);
-                resultContainer.style.display = 'flex';
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                const resultItem = document.createElement('div');
-                resultItem.className = 'result-item';
-                resultItem.innerHTML = `<input type="text" class="form-control" value="文件 ${file.name} 上传失败" readonly>`;
-                resultContainer.appendChild(resultItem);
-                resultContainer.style.display = 'flex';
-            });
-        }
-    });
+                    const copyButton = document.createElement('button');
+                    copyButton.className = 'btn btn-success mr-2';
+                    copyButton.innerText = '复制URL';
+                    copyButton.onclick = function() {
+                        copyUrl(this);
+                    };
+                    resultItem.appendChild(copyButton);
 
-    function copyUrl(button) {
-        const copyText = button.nextElementSibling.nextElementSibling;
-        copyText.select();
-        copyText.setSelectionRange(0, 99999);
-        document.execCommand('copy');
-    }
-    </script>
-</body>
-</html>
+                    const urlInput = document.createElement('input');
+                    urlInput.type = 'text';
+                    urlInput.className = 'form-control mb-2';
+                    urlInput.value = data;
+                    urlInput.readOnly = true;
+                    resultItem.appendChild(urlInput);
+
+                    if (enablePreview) {
+                        const previewImg = document.createElement('img');
+                        previewImg.src = data;
+                        previewImg.className = 'preview-img';
+                        resultItem.appendChild(previewImg);
+                    }
+
+                    resultContainer.appendChild(resultItem);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    resultItem.innerText = `文件 ${file.name} 上传失败`;
+                    resultContainer.appendChild(resultItem);
+                });
+            }
+        });
+
+        function copyUrl(button) {
+            const urlInput = button.nextElementSibling;
+            urlInput.select();
+            urlInput.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            alert('URL 已复制');
