@@ -28,6 +28,6 @@ fs.readFile(destPath, 'utf8', function (err, data) {
     // 将修改后的内容写回文件
     fs.writeFile(destPath, result, 'utf8', function (err) {
          if (err) return console.log(err);
-         console.log('API_ENDPOINT已替换，并保存到:', destPath);
+         console.log('API_ENDPOINT已替换为', apiEndpoint,'并保存到:', destPath);
     });
 });

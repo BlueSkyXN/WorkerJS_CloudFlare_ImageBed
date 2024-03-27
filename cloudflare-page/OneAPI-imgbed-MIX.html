@@ -55,8 +55,8 @@
             <div class="form-group">
                 <label for="apiSelect">选择接口</label>
                 <select class="form-control" id="apiSelect">
-                    <option value="58img">api-58img</option>
                     <option value="tgphimg">api-tgph-official</option>
+                    <option value="58img">api-58img</option>
                 </select>
             </div>
             <div class="form-check mb-2">
@@ -66,6 +66,7 @@
                 </label>
             </div>
             <button type="submit" class="btn btn-primary">上传</button>
+            <button type="button" id="convertButton" class="btn btn-success" style="display: none;">转换</button>
         </form>
         <div id="result" class="mt-3">
             <!-- 上传结果将显示在这里 -->
@@ -138,6 +139,22 @@
                     resultContainer.style.display = 'block';
                 });
             }
+            document.getElementById('apiSelect').addEventListener('change', function() {
+                const convertButton = document.getElementById('convertButton');
+                // 检查是否选中了 'tgphimg' 选项
+                if (this.value === 'tgphimg') {
+                    // 显示转换按钮
+                    convertButton.style.display = '';
+                } else {
+                    // 隐藏转换按钮
+                    convertButton.style.display = 'none';
+                }
+            });
+
+            document.getElementById('convertButton').addEventListener('click', function() {
+                // 在新窗口中打开 /tools/tgph 的 URL
+                window.open('/tools/tgph', '_blank');
+            });
         });
 
         function copyUrl(button) {
