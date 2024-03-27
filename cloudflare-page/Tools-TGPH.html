@@ -10,36 +10,49 @@
         .container {
             margin-top: 50px;
         }
-        .result-item {
+        .url-item {
             margin-top: 10px;
             border: 1px solid #ccc;
             padding: 10px;
             border-radius: 5px;
-            background-color: #f9f9f9; /* 轻微调整背景颜色以适应URL列表 */
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
         }
-        #urlList {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            max-height: 400px; /* 设置最大高度并允许滚动 */
-            overflow-y: auto;
+        .copy-button {
+            margin-right: 10px;
+            background-color: #17a2b8; /* Bootstrap info color */
+            border-color: #17a2b8; /* Bootstrap info color */
         }
-        #urlList div {
-            margin-top: 8px;
+        .copy-button:hover {
+            background-color: #138496; /* Darker shade */
+            border-color: #117a8b; /* Darker shade */
+        }
+        .input-group-prepend {
+            margin-right: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>URL Transformer</h2>
-        <div class="form-group">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <button class="btn btn-outline-secondary" type="button" id="pasteUrl">粘贴URL</button>
+            </div>
             <input type="text" class="form-control" id="inputUrl" placeholder="输入原始URL">
+            <div class="input-group-append">
+                <button class="btn btn-primary" onclick="transformUrl()">转换URL</button>
+            </div>
         </div>
-        <button class="btn btn-primary" onclick="transformUrl()">转换URL</button>
-        <div id="urlList" class="result-item mt-3"></div>
+        <div id="urlList"></div>
     </div>
 
     <script>
+        document.getElementById('pasteUrl').addEventListener('click', function() {
+            navigator.clipboard.readText().then(text => document.getElementById('inputUrl').value = text);
+        });
+
         function transformUrl() {
             const originalUrl = document.getElementById('inputUrl').value;
             const fileName = originalUrl.match(/\/file\/(.+)$/)[1]; // 提取文件名
@@ -66,9 +79,21 @@
             const urlList = document.getElementById('urlList');
             urlList.innerHTML = ''; // 清空之前的结果
             urls.forEach(url => {
-                const element = document.createElement('div');
-                element.textContent = url;
-                urlList.appendChild(element);
+                const urlItem = document.createElement('div');
+                urlItem.className = 'url-item';
+
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'btn btn-info copy-button';
+                copyBtn.textContent = '复制URL';
+                copyBtn.onclick = function() { navigator.clipboard.writeText(url); };
+
+                const urlText = document.createElement('span');
+                urlText.textContent = url;
+
+                urlItem.appendChild(copyBtn);
+                urlItem.appendChild(urlText);
+
+                urlList.appendChild(urlItem);
             });
         }
     </script>
