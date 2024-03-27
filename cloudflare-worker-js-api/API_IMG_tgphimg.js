@@ -1,5 +1,5 @@
 addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request));
+  event.respondWith(handleTgphimgRequest(event.request));
 })
 
 async function handleRequest(request) {

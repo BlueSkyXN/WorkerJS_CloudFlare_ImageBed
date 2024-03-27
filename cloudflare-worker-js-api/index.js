@@ -57,21 +57,11 @@ addEventListener('fetch', event => {
     }
   }
 
-  async function handle58imgRequest(request) {
-    // 确认请求方法为 POST 并且内容类型正确
-    if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
-      return new Response('Invalid request', { status: 400 });
-    }
+
     // 此处省略了58img的处理逻辑，直接复制自 API_IMG_58img.js
-  }
-  
-  async function handleTgphimgRequest(request) {
-    // 确认请求方法为 POST 并且内容类型正确
-    if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
-      return new Response('Invalid request', { status: 400 });
-    }
+
     // 此处省略了tgphimg的处理逻辑，直接复制自 API_IMG_tgphimg.js
-  }
+
   
   // 复制自 API_IMG_58img.js 的辅助函数
   function bufferToBase64(buf) {

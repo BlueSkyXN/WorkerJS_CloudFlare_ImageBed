@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Transformer</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+        .result-item {
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9; /* 轻微调整背景颜色以适应URL列表 */
+        }
+        #urlList {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            max-height: 400px; /* 设置最大高度并允许滚动 */
+            overflow-y: auto;
+        }
+        #urlList div {
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>URL Transformer</h2>
+        <div class="form-group">
+            <input type="text" class="form-control" id="inputUrl" placeholder="输入原始URL">
+        </div>
+        <button class="btn btn-primary" onclick="transformUrl()">转换URL</button>
+        <div id="urlList" class="result-item mt-3"></div>
+    </div>
+
+    <script>
+        function transformUrl() {
+            const originalUrl = document.getElementById('inputUrl').value;
+            const fileName = originalUrl.match(/\/file\/(.+)$/)[1]; // 提取文件名
+
+            const prefixes = [
+                'https://telegraph.cachefly.net/file/',
+                'https://i0.wp.com/telegra.ph/file/',
+                'https://i1.wp.com/telegraph.cachefly.net/file/',
+                'https://i2.wp.com/im.gurl.eu.org/file/',
+                'https://i3.wp.com/missuo.ru/file/',
+                'https://image.baidu.com/search/down?url=https://i3.wp.com/missuo.ru/file/',
+                'https://images.weserv.nl/?url=https://missuo.ru/file/',
+                'https://pic1.xuehuaimg.com/proxy/https://i0.wp.com/missuo.ru/file/',
+                'https://im.gurl.eu.org/file/',
+                'https://img1.131213.xyz/file/',
+                'https://missuo.ru/file/'
+            ];
+
+            let transformedUrls = prefixes.map(prefix => `${prefix}${fileName}`);
+            displayUrls(transformedUrls);
+        }
+
+        function displayUrls(urls) {
+            const urlList = document.getElementById('urlList');
+            urlList.innerHTML = ''; // 清空之前的结果
+            urls.forEach(url => {
+                const element = document.createElement('div');
+                element.textContent = url;
+                urlList.appendChild(element);
+            });
+        }
+    </script>
+</body>
+</html>
