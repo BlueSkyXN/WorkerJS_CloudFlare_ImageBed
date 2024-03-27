@@ -21,17 +21,27 @@ fs.readFile(destPath, 'utf8', function (err, data) {
         return console.log(err);
     }
 
-    // 获取API_ENDPOINT环境变量的值，如果未设置，则使用默认值
-    const apiEndpoint = process.env.API_ENDPOINT || 'https://github.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed';
-    // 将API_ENDPOINT的值转换为Base64编码
-    const encodedApiEndpoint = Buffer.from(apiEndpoint).toString('base64');
+    let finalApiEndpoint;
+    // 检查API_ENDPOINT_BASE64环境变量是否存在
+    if (process.env.API_ENDPOINT_BASE64) {
+        // 如果存在，直接使用API_ENDPOINT_BASE64的值
+        finalApiEndpoint = process.env.API_ENDPOINT_BASE64;
+    } else if (process.env.API_ENDPOINT) {
+        // 如果API_ENDPOINT_BASE64不存在，但API_ENDPOINT存在，将API_ENDPOINT的值转换为Base64编码
+        finalApiEndpoint = Buffer.from(process.env.API_ENDPOINT).toString('base64');
+    } else {
+        // 如果两者都不存在，使用默认值并转换为Base64编码
+        finalApiEndpoint = Buffer.from('https://github.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed').toString('base64');
+    }
 
-    // 在HTML文件内容中查找{{API_ENDPOINT_BASE64}}占位符，并用Base64编码后的API_ENDPOINT值替换它
-    const result = data.replace(/{{API_ENDPOINT_BASE64}}/g, encodedApiEndpoint);
+    // 在HTML文件内容中查找{{API_ENDPOINT_BASE64}}占位符，并用最终确定的Base64编码值替换它
+    const result = data.replace(/{{API_ENDPOINT_BASE64}}/g, finalApiEndpoint);
 
     // 将修改后的内容写回文件
     fs.writeFile(destPath, result, 'utf8', function (err) {
          if (err) return console.log(err);
-         console.log('API_ENDPOINT已转换为Base64编码', encodedApiEndpoint, 'API_ENDPOINT已转换为', apiEndpoint, '并保存到:', destPath);
+         // 解码finalApiEndpoint以显示实际URL
+         const actualUrl = Buffer.from(finalApiEndpoint, 'base64').toString('utf8');
+         console.log(`API_ENDPOINT_BASE64已替换为: ${finalApiEndpoint}, 实际URL是: ${actualUrl} 并保存到: ${destPath}`);
     });
 });
