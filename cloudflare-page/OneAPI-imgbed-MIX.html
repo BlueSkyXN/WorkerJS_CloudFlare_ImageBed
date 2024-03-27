@@ -58,6 +58,10 @@
                 <input type="text" class="form-control" id="apiUrl" placeholder="Input API Endpoint with http(s)://***.***" required>
             </div>
             <div class="form-group">
+                <label for="apiPassword">API Password</label>
+                <input type="text" class="form-control" id="apiPassword" placeholder="Enter API Password">
+            </div>
+            <div class="form-group">
                 <label for="fileInput">Select Files</label>
                 <input type="file" class="form-control-file" id="fileInput" multiple required>
             </div>
@@ -90,6 +94,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateConvertButtonVisibility(); // 页面加载时更新按钮状态
             setApiUrl();
+            setApiPassword();
             document.getElementById('apiSelect').addEventListener('change', updateConvertButtonVisibility);
             document.getElementById('upload-form').addEventListener('submit', handleFormSubmit);
             document.getElementById('convertButton').addEventListener('click', function() {
@@ -101,6 +106,11 @@
             const encodedApiEndpoint = '{{API_ENDPOINT_BASE64}}'; // 将"您的Base64编码字符串"替换为实际的Base64编码后的API地址
             const decodedApiEndpoint = atob(encodedApiEndpoint);
             document.getElementById('apiUrl').value = decodedApiEndpoint;
+        }
+        function setApiPassword() {
+            const encodedApiPassword = '{{API_PASSWORD_BASE64}}'; // 将这里替换为您的Base64编码后的API密码
+            const decodedApiPassword = atob(encodedApiPassword); // 使用atob函数解码Base64字符串
+            document.getElementById('apiPassword').value = decodedApiPassword; // 设置解码后的密码到密码输入框
         }
         function updateConvertButtonVisibility() {
             const convertButton = document.getElementById('convertButton');
@@ -123,8 +133,11 @@
                 const apiUrl = `${apiUrlInput.value}/upload/${apiSelect.value}`;
                 console.log('API URL:', apiUrl);
                 fetch(apiUrl, {
-                    method: 'POST',
-                    body: formData,
+                method: 'POST',
+                body: formData,
+                headers: {
+                        'Authorization': 'Bearer ' + document.getElementById('apiPassword').value // 使用密码输入框中的密码作为请求头中的密码
+                    }
                 })
                 .then(response => response.text())
                 .then(data => {

@@ -2,7 +2,7 @@ addEventListener('fetch', event => {
   event.respondWith(handleTgphimgRequest(event.request));
 })
 
-async function handleRequest(request) {
+async function handleTgphimgRequest(request) {
   // 确认请求方法为 POST 并且内容类型正确
   if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
     return new Response('Invalid request', { status: 400 });
