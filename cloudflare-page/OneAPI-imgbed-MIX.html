@@ -78,26 +78,36 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
-        document.getElementById('upload-form').addEventListener('submit', function(e) {
+        document.addEventListener('DOMContentLoaded', function() {
+            updateConvertButtonVisibility(); // 页面加载时更新按钮状态
+    
+            document.getElementById('apiSelect').addEventListener('change', updateConvertButtonVisibility);
+            document.getElementById('upload-form').addEventListener('submit', handleFormSubmit);
+            document.getElementById('convertButton').addEventListener('click', function() {
+                // 在新窗口中打开 /tools/tgph 的 URL
+                window.open('/tools/tgph', '_blank');
+            });
+        });
+        function updateConvertButtonVisibility() {
+            const convertButton = document.getElementById('convertButton');
+            const apiSelect = document.getElementById('apiSelect').value;
+            convertButton.style.display = apiSelect === 'tgphimg' ? '' : 'none';
+        }
+        function handleFormSubmit(e) {
             e.preventDefault();
-
             const apiUrlInput = document.getElementById('apiUrl');
             const fileInput = document.getElementById('fileInput');
             const apiSelect = document.getElementById('apiSelect');
             const resultContainer = document.getElementById('result');
             const enablePreview = document.getElementById('enablePreview').checked;
-
             // 清除旧的结果
             resultContainer.innerHTML = '';
             resultContainer.style.display = 'none';
-
             for (const file of fileInput.files) {
                 const formData = new FormData();
                 formData.append('image', file);
-
                 const apiUrl = `${apiUrlInput.value}/upload/${apiSelect.value}`;
                 console.log('API URL:', apiUrl);
-
                 fetch(apiUrl, {
                     method: 'POST',
                     body: formData,
@@ -116,7 +126,6 @@
                         </div>
                     `;
                     resultItem.innerHTML = resultContent;
-
                     if (enablePreview) {
                         const preview = document.createElement('div');
                         preview.className = 'preview-container';
@@ -126,7 +135,6 @@
                         preview.appendChild(previewImg);
                         resultItem.appendChild(preview);
                     }
-
                     resultContainer.appendChild(resultItem);
                     resultContainer.style.display = 'block';
                 })
@@ -139,30 +147,13 @@
                     resultContainer.style.display = 'block';
                 });
             }
-            document.getElementById('apiSelect').addEventListener('change', function() {
-                const convertButton = document.getElementById('convertButton');
-                // 检查是否选中了 'tgphimg' 选项
-                if (this.value === 'tgphimg') {
-                    // 显示转换按钮
-                    convertButton.style.display = '';
-                } else {
-                    // 隐藏转换按钮
-                    convertButton.style.display = 'none';
-                }
-            });
-
-            document.getElementById('convertButton').addEventListener('click', function() {
-                // 在新窗口中打开 /tools/tgph 的 URL
-                window.open('/tools/tgph', '_blank');
-            });
-        });
-
+        }
         function copyUrl(button) {
             const copyText = button.parentElement.nextElementSibling.querySelector('input');
             copyText.select();
             copyText.setSelectionRange(0, 99999);
             document.execCommand('copy');
         }
-    </script>
+    </script>    
 </body>
 </html>
