@@ -55,7 +55,7 @@
         <form id="upload-form">
             <div class="form-group">
                 <label for="apiUrl">API Endpoint</label>
-                <input type="text" class="form-control" id="apiUrl" placeholder="Input API Endpoint with http(s)://***.***" value="{{API_ENDPOINT}}" required>
+                <input type="text" class="form-control" id="apiUrl" placeholder="Input API Endpoint with http(s)://***.***" required>
             </div>
             <div class="form-group">
                 <label for="fileInput">Select Files</label>
@@ -89,7 +89,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             updateConvertButtonVisibility(); // 页面加载时更新按钮状态
-    
+            setApiUrl();
             document.getElementById('apiSelect').addEventListener('change', updateConvertButtonVisibility);
             document.getElementById('upload-form').addEventListener('submit', handleFormSubmit);
             document.getElementById('convertButton').addEventListener('click', function() {
@@ -97,6 +97,11 @@
                 window.open('/tools/tgph', '_blank');
             });
         });
+        function setApiUrl() {
+            const encodedApiEndpoint = '{{API_ENDPOINT_BASE64}}'; // 将"您的Base64编码字符串"替换为实际的Base64编码后的API地址
+            const decodedApiEndpoint = atob(encodedApiEndpoint);
+            document.getElementById('apiUrl').value = decodedApiEndpoint;
+        }
         function updateConvertButtonVisibility() {
             const convertButton = document.getElementById('convertButton');
             const apiSelect = document.getElementById('apiSelect').value;
