@@ -15,4 +15,4 @@
 - 20231124 通过163imgpy验证了接口失效``no healthy upstream``，新增 weixinyanxuan.com 的玩具py，js实现失败
 - 20240219 如果需要进一步加速图片的，还可以参考 《公开免费无限的图片加速代理接口》 [https://www.blueskyxn.com/202402/7006.html](https://www.blueskyxn.com/202402/7006.html)
 - 20240220 如果使用CloudFlareR2对象存储的，还可以参考 [https://github.com/BlueSkyXN/CF-R2-WorkerJS](https://github.com/BlueSkyXN/CF-R2-WorkerJS) 来进行优化 
-- 20240327 花了2天时间，完成统一接口前后端设计
+- 20240327 花了2天时间，完成统一接口前后端设计,教程 https://github.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed/blob/main/docs/Serverless.md
