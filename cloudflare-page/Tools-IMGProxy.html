@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TGPH URL Transformer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+        .url-item {
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+        }
+        .copy-button {
+            margin-right: 10px;
+            background-color: #12ca49;
+            border-color: #12ca49;
+        }
+        .copy-button:hover {
+            background-color: #149e3e;
+            border-color: #149e3e;
+        }
+        .input-group-prepend {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>TGPH URL Transformer</h2>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <button class="btn btn-outline-secondary" type="button" id="pasteUrl">Paste URL</button>
+            </div>
+            <input type="text" class="form-control" id="inputUrl" placeholder="Input Raw URL">
+            <div class="input-group-append">
+                <button class="btn btn-primary" onclick="transformUrl()">Transform URL</button>
+            </div>
+        </div>
+        <div id="urlList"></div>
+    </div>
+
+    <script>
+        document.getElementById('pasteUrl').addEventListener('click', function() {
+            navigator.clipboard.readText().then(text => document.getElementById('inputUrl').value = text);
+        });
+
+        function transformUrl() {
+            const originalUrl = document.getElementById('inputUrl').value;
+            const urlPart = originalUrl.split('://')[1]; // 提取https://之后的部分
+
+            const prefixes = [
+                'https://cdn.cdnjson.com/pic.html?url=https://',
+                'https://image.baidu.com/search/down?url=https://',
+                'https://i3.wp.com/',
+                'http://collect34.longsunhd.com/source/plugin/yzs1013_pldr/getimg.php?url=https://',
+                'https://images.weserv.nl/?url=https://',
+                'https://imageproxy.pimg.tw/resize?url=https://',
+                'https://pic1.xuehuaimg.com/proxy/https://',
+                'https://images.weserv.nl/?url=https://i3.wp.com/',
+                'https://pic1.xuehuaimg.com/proxy/https://images.weserv.nl/?url=https://i3.wp.com/'
+            ];
+
+            let transformedUrls = prefixes.map(prefix => `${prefix}${urlPart}`);
+            displayUrls(transformedUrls);
+        }
+
+        function displayUrls(urls) {
+            const urlList = document.getElementById('urlList');
+            urlList.innerHTML = '';
+            urls.forEach(url => {
+                const urlItem = document.createElement('div');
+                urlItem.className = 'url-item';
+
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'btn btn-info copy-button';
+                copyBtn.textContent = 'COPY URL';
+                copyBtn.onclick = function() { navigator.clipboard.writeText(url); };
+
+                const urlText = document.createElement('span');
+                urlText.textContent = url;
+
+                urlItem.appendChild(copyBtn);
+                urlItem.appendChild(urlText);
+
+                urlList.appendChild(urlItem);
+            });
+        }
+    </script>
+</body>
+</html>

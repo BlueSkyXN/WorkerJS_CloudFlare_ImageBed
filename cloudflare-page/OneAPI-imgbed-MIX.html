@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OneAPI File Uploader</title>
-    <!-- INFO -->
     <!-- 
         本代码完全开源，仅供学习CloudFlare Page和Worker组件编程使用
         仓库地址 https://github.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed
@@ -13,7 +12,6 @@
         API接口均需要使用者自行解决，本人不提供任何API接口服务
         不得在中国大陆地区使用本代码
     -->
-    <!-- 引入 Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         .container {
@@ -25,24 +23,24 @@
             padding: 10px;
             border-radius: 5px;
             display: flex;
-            flex-direction: column; /* 不同框之间纵向排列 */
-            width: 100%; /* 设置结果框宽度为100% */
+            flex-direction: column;
+            width: 100%;
         }
         .preview-container {
-            max-width: calc(100% - 20px); /* 图片预览容器的最大宽度为外部框架宽度减去左右 padding */
-            max-height: calc(8 * 50px); /* 最大高度不超过8个上传按钮的高度 */
-            overflow: hidden; /* 超出部分隐藏 */
-            margin-top: 10px; /* 添加顶部间距 */
-            width: 100%; /* 设置预览容器宽度为100% */
+            max-width: calc(100% - 20px);
+            max-height: calc(8 * 50px);
+            overflow: hidden;
+            margin-top: 10px;
+            width: 100%;
         }
         .preview-img {
-            max-width: 100%; /* 图片预览的最大宽度为容器宽度 */
-            height: auto; /* 自适应高度 */
-            display: block; /* 防止图片下面产生空白 */
+            max-width: 100%;
+            height: auto;
+            display: block;
         }
         .copy-button, .file-name, .file-url {
-            display: inline-block; /* 按钮、文件名和URL在同一行 */
-            margin-bottom: 5px; /* 添加底部间距 */
+            display: inline-block;
+            margin-bottom: 5px;
         }
         .copy-button {
             width: auto;
@@ -79,6 +77,7 @@
                 </label>
             </div>
             <button type="submit" class="btn btn-primary">Upload</button>
+            <button type="button" class="btn btn-info" onclick="window.location.href='/tools/imgproxy';">IMGProxy</button>
             <button type="button" id="convertButton" class="btn btn-success" style="display: none;">Transform</button>
         </form>
         <div id="result" class="mt-3">

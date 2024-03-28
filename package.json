@@ -6,7 +6,8 @@
     "scripts": {
       "build1": "node cloudflare-page-build/scripts/quick-build.js",
       "build2": "node cloudflare-page-build/scripts/Build_Tools-TGPH.js",
-      "build": "npm run build1 && npm run build2"
+      "build3": "node cloudflare-page-build/scripts/Build_Tools-IMGProxy.js",
+      "build": "npm run build1 && npm run build2 && npm run build3"
     },
     "author": "BlueSkyXN",
     "license": "GPLv3",
