@@ -16,3 +16,4 @@
 - 20240219 如果需要进一步加速图片的，还可以参考 《公开免费无限的图片加速代理接口》 [https://www.blueskyxn.com/202402/7006.html](https://www.blueskyxn.com/202402/7006.html)
 - 20240220 如果使用CloudFlareR2对象存储的，还可以参考 [https://github.com/BlueSkyXN/CF-R2-WorkerJS](https://github.com/BlueSkyXN/CF-R2-WorkerJS) 来进行优化 
 - 20240327 花了2天时间，完成统一接口前后端设计,教程 https://github.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed/blob/main/docs/Serverless.md
+- 20240328 根据图片加速接口，写了一个纯前端转换器
