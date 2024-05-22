@@ -32,10 +32,21 @@
             margin-right: 10px;
             background-color: #12ca49;
             border-color: #12ca49;
+            white-space: nowrap;
         }
         .copy-button:hover {
             background-color: #149e3e;
             border-color: #149e3e;
+        }
+        .open-button {
+            margin-right: 10px;
+            background-color: #007bff;
+            border-color: #007bff;
+            white-space: nowrap;
+        }
+        .open-button:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
         }
         .input-group-prepend {
             margin-right: 10px;
@@ -43,15 +54,13 @@
         .description {
             margin-right: 10px;
             font-weight: bold;
+            white-space: nowrap;
         }
-        .open-button {
-            margin-right: 10px;
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-        .open-button:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
+        .url-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex-grow: 1;
         }
     </style>
 </head>
@@ -108,15 +117,16 @@
 
                 const openBtn = document.createElement('button');
                 openBtn.className = 'btn btn-primary open-button';
-                openBtn.textContent = 'OPEN URL';
+                openBtn.textContent = 'OPEN';
                 openBtn.onclick = function() { window.open(url, '_blank'); };
 
                 const copyBtn = document.createElement('button');
                 copyBtn.className = 'btn btn-info copy-button';
-                copyBtn.textContent = 'COPY URL';
+                copyBtn.textContent = 'COPY';
                 copyBtn.onclick = function() { navigator.clipboard.writeText(url); };
 
                 const urlText = document.createElement('span');
+                urlText.className = 'url-text';
                 urlText.textContent = url;
 
                 urlItem.appendChild(descText);
