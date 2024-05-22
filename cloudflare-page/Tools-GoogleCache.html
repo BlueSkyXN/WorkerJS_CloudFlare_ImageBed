@@ -40,6 +40,19 @@
         .input-group-prepend {
             margin-right: 10px;
         }
+        .description {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .open-button {
+            margin-right: 10px;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .open-button:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -72,17 +85,31 @@
                 return;
             }
 
-            const googleCacheUrl = `https://webcache.googleusercontent.com/search?q=cache:${originalUrl}`;
+            const baseUrl = `https://webcache.googleusercontent.com/search?q=cache:${originalUrl}`;
+            const urls = [
+                { url: baseUrl, description: '通用快照' },
+                { url: `${baseUrl}&strip=0`, description: '网页快照' },
+                { url: `${baseUrl}&strip=1`, description: '纯文快照' }
+            ];
 
-            displayUrls([googleCacheUrl]);
+            displayUrls(urls);
         }
 
         function displayUrls(urls) {
             const urlList = document.getElementById('urlList');
             urlList.innerHTML = '';
-            urls.forEach(url => {
+            urls.forEach(({ url, description }) => {
                 const urlItem = document.createElement('div');
                 urlItem.className = 'url-item';
+
+                const descText = document.createElement('span');
+                descText.className = 'description';
+                descText.textContent = description;
+
+                const openBtn = document.createElement('button');
+                openBtn.className = 'btn btn-primary open-button';
+                openBtn.textContent = 'OPEN URL';
+                openBtn.onclick = function() { window.open(url, '_blank'); };
 
                 const copyBtn = document.createElement('button');
                 copyBtn.className = 'btn btn-info copy-button';
@@ -92,6 +119,8 @@
                 const urlText = document.createElement('span');
                 urlText.textContent = url;
 
+                urlItem.appendChild(descText);
+                urlItem.appendChild(openBtn);
                 urlItem.appendChild(copyBtn);
                 urlItem.appendChild(urlText);
 
