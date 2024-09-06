@@ -17,3 +17,4 @@
 - 20240220 如果使用CloudFlareR2对象存储的，还可以参考 [https://github.com/BlueSkyXN/CF-R2-WorkerJS](https://github.com/BlueSkyXN/CF-R2-WorkerJS) 来进行优化 
 - 20240327 花了2天时间，完成统一接口前后端设计,教程 https://github.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed/blob/main/docs/Serverless.md
 - 20240328 根据图片加速接口，写了一个纯前端转换器
+- 20240906 TG创始人被抓后开始降本增效，停用了TGPH上传
