@@ -1,3 +1,6 @@
+// 参考了 https://github.com/k08255-lxm/WX-MT_Image/blob/main/upload_wechat.php
+// 以及 https://github.com/x-dr/telegraph-Image/blob/main/src/app/api/tencent/route.js
+
 async function handleTencentRequest(request) {
   try {
     // 确保请求方法为 POST
