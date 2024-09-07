@@ -124,9 +124,17 @@ async function handleRequest(request) {
     }
   }
 
-  addEventListener('fetch', event => {
-    event.respondWith(handleaagmoeRequest(event.request));
-  })
+  // 复制自 API_IMG_58img.js 的辅助函数
+  function bufferToBase64(buf) {
+    var binary = '';
+    var bytes = new Uint8Array(buf);
+    var len = bytes.byteLength;
+    for (var i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    // 使用 btoa 进行 Base64 编码
+    return btoa(binary);
+  } 
   
   async function handleaagmoeRequest(request) {
     try {
@@ -140,18 +148,21 @@ async function handleRequest(request) {
       const imageFile = formData.get('image'); // 假设字段名为 'image'
       if (!imageFile) return new Response('Image file not found', { status: 400 });
   
+      // 创建新的 FormData 对象，并将 'image' 字段重命名为 'file'
+      const newFormData = new FormData();
+      newFormData.append('file', imageFile); // 使用目标接口的字段名 'file'
+  
       // ihs.aag.moe 的上传接口
       const targetUrl = 'https://ihs.aag.moe/upload.php';
   
       // 为了与 ihs.aag.moe 接口兼容，我们保留表单数据的格式并直接转发
       const response = await fetch(targetUrl, {
         method: 'POST',
-        body: formData,
+        body: newFormData, // 使用新的 FormData 对象
         headers: {
           'Accept': '*/*',
           'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7',
           'Cache-Control': 'no-cache',
-          'Content-Type': request.headers.get('Content-Type'),
           'Origin': 'https://ihs.aag.moe',
           'Pragma': 'no-cache',
           'Referer': 'https://ihs.aag.moe/',
@@ -181,19 +192,5 @@ async function handleRequest(request) {
       console.error('Caught an error:', error);
       return new Response('Server Error', { status: 500 });
     }
-  }
-  
-  
-
-  // 复制自 API_IMG_58img.js 的辅助函数
-  function bufferToBase64(buf) {
-    var binary = '';
-    var bytes = new Uint8Array(buf);
-    var len = bytes.byteLength;
-    for (var i = 0; i < len; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    // 使用 btoa 进行 Base64 编码
-    return btoa(binary);
   }
   

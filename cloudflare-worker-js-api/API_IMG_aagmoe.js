@@ -14,18 +14,21 @@ async function handleaagmoeRequest(request) {
     const imageFile = formData.get('image'); // 假设字段名为 'image'
     if (!imageFile) return new Response('Image file not found', { status: 400 });
 
+    // 创建新的 FormData 对象，并将 'image' 字段重命名为 'file'
+    const newFormData = new FormData();
+    newFormData.append('file', imageFile); // 使用目标接口的字段名 'file'
+
     // ihs.aag.moe 的上传接口
     const targetUrl = 'https://ihs.aag.moe/upload.php';
 
     // 为了与 ihs.aag.moe 接口兼容，我们保留表单数据的格式并直接转发
     const response = await fetch(targetUrl, {
       method: 'POST',
-      body: formData,
+      body: newFormData, // 使用新的 FormData 对象
       headers: {
         'Accept': '*/*',
         'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7',
         'Cache-Control': 'no-cache',
-        'Content-Type': request.headers.get('Content-Type'),
         'Origin': 'https://ihs.aag.moe',
         'Pragma': 'no-cache',
         'Referer': 'https://ihs.aag.moe/',
