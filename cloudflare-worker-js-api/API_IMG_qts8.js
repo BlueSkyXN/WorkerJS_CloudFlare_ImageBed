@@ -1,38 +1,76 @@
 addEventListener('fetch', event => {
-  event.respondWith(handleTgphimgRequest(event.request));
-})
+  event.respondWith(handleQst8Request(event.request));
+});
 
-async function handleTgphimgRequest(request) {
-  // 确认请求方法为 POST 并且内容类型正确
-  if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
-    return new Response('Invalid request', { status: 400 });
+async function handleQst8Request(request) {
+  console.log('Request received:', request.url);
+
+  if (request.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405 });
   }
 
-  // 解析表单数据
-  const formData = await request.formData();
-  const imageFile = formData.get('image'); // 假设字段名为 'image'
-  if (!imageFile) return new Response('Image file not found', { status: 400 });
-
-  // Telegra.ph 的上传接口
-  const targetUrl = 'https://telegra.ph/upload';
-
-  // 为了与 Telegra.ph 接口兼容，我们保留表单数据的格式并直接转发
-  const response = await fetch(targetUrl, {
-    method: 'POST',
-    body: formData
-  });
-
-  // 处理响应
-  if (response.ok) {
-    const result = await response.json();
-    if (result && result[0] && result[0].src) {
-      const imageUrl = `https://telegra.ph${result[0].src}`;
-      // 直接返回图片 URL 而不是 JSON 对象
-      return new Response(imageUrl);
-    } else {
-      return new Response('Error: Unexpected response format', { status: 500 });
+  try {
+    const formData = await request.formData();
+    const file = formData.get('image'); // 使用 'image' 字段名
+    if (!file) {
+      return new Response('No file uploaded', { status: 400 });
     }
-  } else {
-    return new Response('Error: ' + await response.text(), { status: response.status });
+
+    const newFormData = new FormData();
+    newFormData.append('file', file, file.name); // 上传到目标服务器时使用 'file'
+
+    const targetUrl = 'https://api.qst8.cn/api/front/upload/img';
+
+    const response = await fetch(targetUrl, {
+      method: 'POST',
+      body: newFormData,
+      headers: {
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7',
+        'Branchid': '1002',
+        'Cache-Control': 'no-cache',
+        'DNT': '1',
+        'Origin': 'https://mlw10086.serv00.net',
+        'Pragma': 'no-cache',
+        'Priority': 'u=1, i',
+        'Referer': 'https://mlw10086.serv00.net/',
+        'Sec-Ch-Ua': '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'cross-site',
+        'Sign': 'e346dedcb06bace9cd7ccc6688dd7ca1', // 替换为动态生成的sign值
+        'Source': 'h5',
+        'Tenantid': '3',
+        'Timestamp': '1725792862411', // 替换为动态生成的timestamp值
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
+      }
+    });
+
+    console.log('Response status:', response.status);
+    const responseText = await response.text();
+    console.log('Response body:', responseText);
+
+    try {
+      const jsonResponse = JSON.parse(responseText);
+      if (jsonResponse.code === 200 && jsonResponse.data) {
+        // 返回 data 字段中的 URL
+        return new Response(jsonResponse.data, {
+          status: 200,
+          headers: { 'Content-Type': 'text/plain' }
+        });
+      }
+    } catch (e) {
+      console.error('Failed to parse JSON:', e);
+    }
+
+    return new Response(responseText, {
+      status: response.status,
+      headers: response.headers
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    return new Response('Internal Server Error', { status: 500 });
   }
 }

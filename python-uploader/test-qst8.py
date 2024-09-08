@@ -21,7 +21,6 @@ headers = {
     'source': 'h5',
     'tenantid': '3',
     'timestamp': '1725792862411',
-    'token': '[object Promise]',  # 请替换成有效的 token
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
 }
 

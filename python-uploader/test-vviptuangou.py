@@ -1,6 +1,6 @@
 import requests
 
-url = 'https://api.da8m.cn/api/upload'
+url = 'https://api.vviptuangou.com/api/upload'
 headers = {
     'accept': 'application/json, text/javascript, */*; q=0.01',
     'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7',
@@ -21,7 +21,7 @@ headers = {
     'source': 'h5',
     'tenantid': '3',
     'timestamp': '1725792862411',
-    'token': '4ca04a3ff8ca3b8f0f8cfa01899ddf8e',  # 请替换成有效的 token
+    'token': 'b3bc3a220db6317d4a08284c6119d136',  # 请替换成有效的 token
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
 }
 
