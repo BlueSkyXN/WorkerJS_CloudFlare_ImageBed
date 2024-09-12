@@ -20,3 +20,4 @@
 - 20240906 TG创始人被抓后开始降本增效，停用了TGPH上传
 - 20240907 新增10086和TX2个渠道
 - 20240908 新增 da8m,qts8,vviptuangou三个，均来自之前的10086，他今天发现改版了
+- 20240912 新增 ipfs-img对接，来自 [https://www.nodeseek.com/post-157998-1](https://www.nodeseek.com/post-157998-1)
