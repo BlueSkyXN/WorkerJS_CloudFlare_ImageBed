@@ -14,7 +14,7 @@ async function handleTgphimgRequest(request) {
   if (!imageFile) return new Response('Image file not found', { status: 400 });
 
   // Telegra.ph 的上传接口
-  const targetUrl = 'https://telegra.ph/upload';
+  const targetUrl = 'https://telegra.ph/upload?source=bugtracker';
 
   // 为了与 Telegra.ph 接口兼容，我们保留表单数据的格式并直接转发
   const response = await fetch(targetUrl, {
