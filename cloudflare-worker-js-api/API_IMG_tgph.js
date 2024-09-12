@@ -1,6 +1,6 @@
 addEventListener('fetch', event => {
   event.respondWith(handleTgphimgRequest(event.request));
-})
+});
 
 async function handleTgphimgRequest(request) {
   // 确认请求方法为 POST 并且内容类型正确
@@ -13,10 +13,14 @@ async function handleTgphimgRequest(request) {
   const imageFile = formData.get('image'); // 假设字段名为 'image'
   if (!imageFile) return new Response('Image file not found', { status: 400 });
 
-  // Telegra.ph 的上传接口
-  const targetUrl = 'https://telegra.ph/upload';
+  // 修改字段名为 'file'，以适应 Telegra.ph 的接口
+  formData.append('file', imageFile);
+  formData.delete('image'); // 删除原来的 'image' 字段
 
-  // 为了与 Telegra.ph 接口兼容，我们保留表单数据的格式并直接转发
+  // Telegra.ph 的上传接口
+  const targetUrl = 'https://telegra.ph/upload?source=bugtracker';
+
+  // 发送修改后的表单数据
   const response = await fetch(targetUrl, {
     method: 'POST',
     body: formData
@@ -25,9 +29,9 @@ async function handleTgphimgRequest(request) {
   // 处理响应
   if (response.ok) {
     const result = await response.json();
-    if (result && result[0] && result[0].src) {
-      const imageUrl = `https://telegra.ph${result[0].src}`;
-      // 直接返回图片 URL 而不是 JSON 对象
+    if (result && result.src) {
+      // 提取 src 并拼接成完整的 URL
+      const imageUrl = `https://telegra.ph${result.src.replace(/\\/g, '')}`; // 处理反斜杠
       return new Response(imageUrl);
     } else {
       return new Response('Error: Unexpected response format', { status: 500 });
