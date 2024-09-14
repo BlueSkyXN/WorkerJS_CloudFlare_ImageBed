@@ -50,7 +50,8 @@ async function handleimg2ipfsRequest(request) {
       console.log(`大小: ${fileSize} 字节`);
 
       // 构建图片访问链接
-      const accessUrl = `https://cdn.img2ipfs.com/ipfs/${fileHash}?filename=${fileName}`;
+      //const accessUrl = `https://cdn.img2ipfs.com/ipfs/${fileHash}?filename=${fileName}`;
+      const accessUrl = `https://i3.wp.com/ipfs.decentralized-content.com/ipfs/${fileHash}?filename=${fileName}`;
       console.log(`图片访问链接: ${accessUrl}`);
 
       // 返回成功的链接
