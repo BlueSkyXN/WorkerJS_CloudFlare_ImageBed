@@ -1,12 +1,14 @@
 // ==UserScript==
 // @name         Custom IPFS Link Redirector
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Redirects IPFS links to a custom IPFS gateway
-// @author       YourName
+// @author       BlueSkyXN
 // @match        *://*/*
 // @grant        none
 // @run-at       document-end
+// @updateURL    https://raw.githubusercontent.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed/main/UserScript/ipfs-fix.js
+// @downloadURL  https://raw.githubusercontent.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed/main/UserScript/ipfs-fix.js
 // ==/UserScript==
 
 (function() {
