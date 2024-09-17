@@ -7,6 +7,8 @@
 // @match        *://*/*
 // @grant        none
 // @run-at       document-end
+// @updateURL    https://raw.githubusercontent.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed/main/UserScript/ipfs-fix.js
+// @downloadURL  https://raw.githubusercontent.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed/main/UserScript/ipfs-fix.js
 // ==/UserScript==
 
 (function() {
