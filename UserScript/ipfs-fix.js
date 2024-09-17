@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IPFS Gateway Redirector with Fallback and Retry
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.4
 // @description  Redirects IPFS links to multiple fallback IPFS gateways with concurrent requests and retry mechanism
 // @author       BlueSkyXN
 // @match        *://*/*
@@ -45,6 +45,7 @@
 
             // 图片加载失败时拒绝 Promise
             img.onerror = () => {
+                console.error(`Failed to load from: ${gateway + hash}`);
                 reject("Failed to load from: " + gateway);
             };
         });
@@ -54,30 +55,34 @@
     async function tryIpfsGatewaysSequentially(img, hash, gateways) {
         let remainingGateways = gateways.slice(); // 复制网关列表
         let originalSrc = img.src;  // 保存原始 URL
+        console.log(`Original URL: ${originalSrc}`);
 
         while (remainingGateways.length > 0) {
             // 取出一组并发网关
             let gatewaysToTry = remainingGateways.splice(0, concurrentRequests);
-            
+            console.log(`Trying gateways: ${gatewaysToTry.join(', ')}`);
+
             try {
                 // 并发请求多个网关，并返回第一个成功的
                 let successfulUrl = await Promise.race(gatewaysToTry.map(gateway => fetchFromGateway(gateway, hash)));
                 img.src = successfulUrl; // 设置为第一个成功的 URL
-                console.log("Successfully loaded from:", successfulUrl);
+                console.log(`Successfully loaded from: ${successfulUrl}`);
                 return; // 请求成功则停止
             } catch (error) {
-                console.error(error); // 记录错误
+                console.error(`Failed to load from current group of gateways: ${gatewaysToTry.join(', ')}`);
             }
         }
 
         // 如果所有网关都失败了，再次尝试一次所有网关
+        console.log("All initial attempts failed, trying all gateways again...");
         try {
             let successfulUrl = await Promise.race(gateways.map(gateway => fetchFromGateway(gateway, hash)));
             img.src = successfulUrl; // 设置为成功的 URL
-            console.log("Second attempt successfully loaded from:", successfulUrl);
+            console.log(`Second attempt successfully loaded from: ${successfulUrl}`);
         } catch (error) {
             console.error("All gateways failed in second attempt. Returning to original URL.");
             img.src = originalSrc;  // 所有都失败后恢复原始 URL
+            console.log(`Restored original URL: ${originalSrc}`);
         }
     }
 
@@ -89,6 +94,7 @@
         var match = imgSrc.match(ipfsRegex);
         if (match) {
             var ipfsHash = match[1];  // 提取IPFS哈希值
+            console.log(`Found IPFS hash: ${ipfsHash}`);
             tryIpfsGatewaysSequentially(imgs[i], ipfsHash, ipfsGateways);  // 尝试按组并发请求网关
         }
     }
