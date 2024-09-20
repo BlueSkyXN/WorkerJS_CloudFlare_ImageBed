@@ -603,7 +603,7 @@ async function handleRequest(request) {
   
         // 构建图片访问链接
         //const accessUrl = `https://cdn.img2ipfs.com/ipfs/${fileHash}?filename=${fileName}`;
-        const accessUrl = `https://i0.wp.com/gateway.pinata.cloud/ipfs/${fileHash}?filename=${fileName}`;
+        const accessUrl = `https://i0.wp.com/gateway.pinata.cloud/ipfs/${fileHash}`;
         console.log(`图片访问链接: ${accessUrl}`);
   
         // 返回成功的链接
