@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IPFS Gateway Redirector with Fallback and Retry
 // @namespace    http://tampermonkey.net/
-// @version      0.4
+// @version      0.5
 // @description  Redirects IPFS links to multiple fallback IPFS gateways with concurrent requests and retry mechanism
 // @author       BlueSkyXN
 // @match        *://*/*
@@ -19,10 +19,20 @@
         "https://gateway.pinata.cloud/ipfs/",
         "https://eth.sucks/ipfs/",
         "https://hardbin.com/ipfs/",
+        "https://gateway.ipfsscan.io/ipfs/",
+        "https://i0.img2ipfs.com/ipfs/",
         "https://ipfs.raribleuserdata.com/ipfs/",
         "https://ipfs.crossbell.io/ipfs/",
         "https://ipfs.basedfellas.io/ipfs/",
-        "https://ipfs.io/ipfs/"
+        "https://ipfs.io/ipfs/",
+        "https://ipfs.interface.social/ipfs/",
+        "https://ipfs.4everland.io/ipfs/",
+        "https://ipfs.le7el.com/ipfs/",
+        "https://gw-seattle.crustcloud.io/ipfs/",
+        "https://ipfs.decentralized-content.com/ipfs/",
+        "https://4everland.io/ipfs/",
+        "https://c4rex.co/ipfs/",
+        "https://ipfs.omakasea.com/ipfs/"
     ];
 
     // 匹配 IPFS 链接的正则表达式
@@ -32,7 +42,7 @@
     var imgs = document.querySelectorAll('img');
 
     // 自定义并发请求的网关数量
-    var concurrentRequests = 2; 
+    var concurrentRequests = 4; 
 
     // 创建一个请求函数，返回一个 Promise
     function fetchFromGateway(gateway, hash) {
