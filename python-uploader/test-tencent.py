@@ -22,6 +22,7 @@ try:
         print("图片上传成功，访问URL为：", response_data['url'])
     else:
         print("上传失败，服务器未返回URL:", response_data)
+        print(response)
 
 except requests.exceptions.RequestException as e:
     print(f"图片上传失败: {e}")
