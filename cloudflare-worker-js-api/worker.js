@@ -62,6 +62,9 @@ async function handleRequest(request) {
     case '/upload/tgphimg':
       response = await  handleTgphimgRequest(request);
       break;
+    case '/upload/aliex':
+      response = await  handleAliExpressRequest(request);
+      break;
     default:
       response = new Response('Not Found', { status: 404 });
       break;
@@ -601,70 +604,66 @@ async function handleRequest(request) {
     console.error('Error:', error);
     return new Response('Internal Server Error', { status: 500 });
   }
-}
-
-async function handle10086Request(request) {
-  console.log('Request received:', request.url);
-
-  if (request.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
   }
 
-  try {
-    const formData = await request.formData();
-    const file = formData.get('image'); // 使用 'image' 字段名
-    if (!file) {
-      return new Response('No file uploaded', { status: 400 });
-    }
 
-    const newFormData = new FormData();
-    newFormData.append('file', file, file.name); // 上传到目标服务器时使用 'file'
-
-    const targetUrl = 'https://mlw10086.serv00.net/upload.php';
-
-    const response = await fetch(targetUrl, {
-      method: 'POST',
-      body: newFormData,
-      headers: {
-        'Accept': '*/*',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7',
-        'Cache-Control': 'no-cache',
-        'DNT': '1',
-        'Origin': 'https://mlw10086.serv00.net',
-        'Pragma': 'no-cache',
-        'Referer': 'https://mlw10086.serv00.net/',
-        'Sec-Ch-Ua': '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
-        'Sec-Ch-Ua-Mobile': '?0',
-        'Sec-Ch-Ua-Platform': '"Windows"',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-origin',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
-      }
-    });
-
-    console.log('Response status:', response.status);
-    const responseText = await response.text();
-    console.log('Response body:', responseText);
-
+  async function handleAliExpressRequest(request, env) {
     try {
-      const jsonResponse = JSON.parse(responseText);
-      if (jsonResponse.code === 200 && jsonResponse.url) {
-        return new Response(jsonResponse.url, {
+      // 确保请求方法为 POST
+      if (request.method !== 'POST') {
+        return new Response('Method not allowed', { status: 405 });
+      }
+  
+      // 解析 multipart/form-data
+      const formData = await request.formData();
+      const imageFile = formData.get('image'); // 假设前端发送的字段名是 'image'
+      if (!imageFile) {
+        return new Response('No image file found in the request', { status: 400 });
+      }
+  
+      // 从 Cloudflare KV 中读取 Cookie
+      const cookie = await env.WORKER_IMGBED.get('ali_express_cookie');
+      if (!cookie) {
+        return new Response('Missing required cookie in KV storage', { status: 500 });
+      }
+  
+      // 准备发送到 AliExpress 的 FormData
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', imageFile, imageFile.name);
+      uploadFormData.append('bizCode', 'ae_profile_avatar_upload');
+  
+      // AliExpress 的上传 URL
+      const uploadUrl = 'https://filebroker.aliexpress.com/x/upload?jiketuchuang=1';
+  
+      // 发送请求到 AliExpress 接口
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
+        body: uploadFormData,
+        headers: {
+          'Origin': 'https://filebroker.aliexpress.com',
+          'Cookie': cookie
+        }
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const result = await response.json();
+  
+      if (result.url) {
+        // 如果成功，返回图片 URL
+        return new Response(result.url, {
           status: 200,
           headers: { 'Content-Type': 'text/plain' }
         });
+      } else {
+        // 如果没有返回 URL，则可能上传失败
+        return new Response('Upload failed: No URL returned', { status: 500 });
       }
-    } catch (e) {
-      console.error('Failed to parse JSON:', e);
+    } catch (error) {
+      console.error('Error in handleAliExpressRequest:', error);
+      return new Response(`Upload failed: ${error.message}`, { status: 500 });
     }
-
-    return new Response(responseText, {
-      status: response.status,
-      headers: response.headers
-    });
-  } catch (error) {
-    console.error('Error:', error);
-    return new Response('Internal Server Error', { status: 500 });
   }
-}
+  
