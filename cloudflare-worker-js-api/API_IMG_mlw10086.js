@@ -3,11 +3,14 @@ addEventListener('fetch', event => {
 })
 
 
-// 示例格式 https://g.gtimg.cn/music/photo_new/T053XD001002t28e44Qc1ka.jpg
-// 兼容 https://qqq.gtimg.cn/music/photo_new/T053XD001002t28e44Qc1ka.jpg
-// 兼容 https://os.i.gtimg.cn/music/photo_new/T053XD001002t28e44Qc1ka.jpg
-// 兼容 https://vac.gtimg.cn/music/photo_new/T053XD001002t28e44Qc1ka.jpg
-// 兼容 https://offline.gtimg.cn/music/photo_new/T053XD001002t28e44Qc1ka.jpg
+/* 
+  示例格式 https://g.gtimg.cn/music/photo_new/T053XD001002t28e44Qc1ka.jpg
+  兼容 https://qqq.gtimg.cn/music/photo_new/T053XD001002t28e44Qc1ka.jpg
+  兼容 https://os.i.gtimg.cn/music/photo_new/T053XD001002t28e44Qc1ka.jpg
+  兼容 https://vac.gtimg.cn/music/photo_new/T053XD001002t28e44Qc1ka.jpg
+  兼容 https://offline.gtimg.cn/music/photo_new/T053XD001002t28e44Qc1ka.jpg
+  似乎屏蔽了CF的IP或者其他原因
+*/
 
 async function handle10086Request(request) {
   console.log('Request received:', request.url);

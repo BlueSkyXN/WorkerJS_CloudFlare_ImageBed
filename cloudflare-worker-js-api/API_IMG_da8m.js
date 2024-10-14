@@ -2,6 +2,10 @@ addEventListener('fetch', event => {
   event.respondWith(handleDa8mRequest(event.request));
 });
 
+/* 
+  接口来自 https://mlw10086.serv00.net/pic/
+*/
+
 async function handleDa8mRequest(request) {
   console.log('Request received:', request.url);
 

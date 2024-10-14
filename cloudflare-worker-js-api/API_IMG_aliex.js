@@ -5,12 +5,12 @@ export default {
 };
 
 /* 
-参考了即刻图床开源的阿里接口 https://jike.info/topic/36748
-需要使用美国等地访问 https://www.aliexpress.com/ 并使用第三方直接注册和登录，比如谷歌，如果访问地异常则不会出现第三方登录
-该模块需要阿里国际账号，虽然不需要实名、可以随便注册但需要Cookie。有效期不清楚，有点像一个月。
-这个试验我放在了KV库理论上也可以用D1库，不用Env直接装载是因为Cookie有点长，大概3KB，而Env最大就5KB好像（对于免费用户）
-你需要创建和绑定名为 WORKER_IMGBED 的库，其中新建 K 字段，名为 ali_express_cookie 然后在V中复制进去浏览器F12得到的完整Cookie即可
-返回图片示例为 https://ae01.alicdn.com/kf 的域名
+  参考了即刻图床开源的阿里接口 https://jike.info/topic/36748
+  需要使用美国等地访问 https://www.aliexpress.com/ 并使用第三方直接注册和登录，比如谷歌，如果访问地异常则不会出现第三方登录
+  该模块需要阿里国际账号，虽然不需要实名、可以随便注册但需要Cookie。有效期不清楚，有点像一个月。
+  这个试验我放在了KV库理论上也可以用D1库，不用Env直接装载是因为Cookie有点长，大概3KB，而Env最大就5KB好像（对于免费用户）
+  你需要创建和绑定名为 WORKER_IMGBED 的库，其中新建 K 字段，名为 ali_express_cookie 然后在V中复制进去浏览器F12得到的完整Cookie即可
+  返回图片示例为 https://ae01.alicdn.com/kf 的域名
 */
 
 async function handleAliExpressRequest(request) {

@@ -2,6 +2,13 @@ addEventListener('fetch', event => {
   event.respondWith(handleimg2ipfsRequest(event.request));
 });
 
+/* 
+  接口来自 https://www.nodeseek.com/post-158028-1
+  网友提供的免费IPFS上传接口
+  然后配合公共网关即可
+  另外建议配合使用 https://github.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed/blob/main/UserScript/ipfs-fix.js
+*/
+
 async function handleimg2ipfsRequest(request) {
   console.log('Request received:', request.url);
 

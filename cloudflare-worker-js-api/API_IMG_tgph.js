@@ -2,6 +2,10 @@ addEventListener('fetch', event => {
   event.respondWith(handleTgphimgRequest(event.request));
 });
 
+/* 
+  接口来自 TGPH的Debug通道，随时可能取消，图片可能也没掉
+*/
+
 async function handleTgphimgRequest(request) {
   // 确认请求方法为 POST 并且内容类型正确
   if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {

@@ -2,6 +2,10 @@ addEventListener('fetch', event => {
   event.respondWith(handleTgphimgRequest(event.request));
 })
 
+/* 
+  接口来自 TGPH的原通道，后来在TG老板被抓后取消
+*/
+
 async function handleTgphimgRequest(request) {
   // 确认请求方法为 POST 并且内容类型正确
   if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {

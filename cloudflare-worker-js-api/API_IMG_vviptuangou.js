@@ -2,6 +2,10 @@ addEventListener('fetch', event => {
   event.respondWith(handleVviptuangouRequest(event.request));
 });
 
+/* 
+  接口来自 https://mlw10086.serv00.net/pic/
+*/
+
 async function handleVviptuangouRequest(request) {
   console.log('Request received:', request.url);
 

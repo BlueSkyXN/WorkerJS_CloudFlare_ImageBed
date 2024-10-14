@@ -1,3 +1,8 @@
+/* 
+  参考了即刻图床开源的京东客服接口 https://jike.info/topic/36738
+  不过我是从对方提供的浏览器插件中找到的，后来在论坛补到原文了
+*/
+
 async function handlejdkfRequest(request) {
     console.log('Request received for jdkf upload:', request.url);
   
