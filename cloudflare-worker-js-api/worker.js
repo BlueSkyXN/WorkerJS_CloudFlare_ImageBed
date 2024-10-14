@@ -63,7 +63,7 @@ async function handleRequest(request) {
       response = await  handleTgphimgRequest(request);
       break;
     case '/upload/aliex':
-      response = await  handleAliExpressRequest(request);
+      response = await  handleAliExpressRequest(request, env);
       break;
     default:
       response = new Response('Not Found', { status: 404 });
