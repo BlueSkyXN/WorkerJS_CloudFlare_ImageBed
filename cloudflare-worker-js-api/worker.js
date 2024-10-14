@@ -63,7 +63,7 @@ async function handleRequest(request) {
       response = await  handleTgphimgRequest(request);
       break;
     case '/upload/aliex':
-      response = await  handleAliExpressRequest(request, env);
+      response = await  handleAliExpressRequest(request);
       break;
     default:
       response = new Response('Not Found', { status: 404 });
@@ -606,64 +606,117 @@ async function handleRequest(request) {
   }
   }
 
-
-  async function handleAliExpressRequest(request, env) {
+  async function handleAliExpressRequest(request) {
     try {
-      // 确保请求方法为 POST
       if (request.method !== 'POST') {
-        return new Response('Method not allowed', { status: 405 });
+        return new Response('Method not allowed', {
+          status: 405,
+          headers: {
+            'Content-Type': 'text/plain',
+            'Access-Control-Allow-Origin': '*',
+          },
+        });
       }
   
-      // 解析 multipart/form-data
       const formData = await request.formData();
-      const imageFile = formData.get('image'); // 假设前端发送的字段名是 'image'
+      const imageFile = formData.get('image');
       if (!imageFile) {
-        return new Response('No image file found in the request', { status: 400 });
+        return new Response('No image file found in the request', {
+          status: 400,
+          headers: {
+            'Content-Type': 'text/plain',
+            'Access-Control-Allow-Origin': '*',
+          },
+        });
       }
   
-      // 从 Cloudflare KV 中读取 Cookie
-      const cookie = await env.WORKER_IMGBED.get('ali_express_cookie');
+      // 从 KV 中获取 Cookie
+      const cookie = await WORKER_IMGBED.get('ali_express_cookie');
       if (!cookie) {
-        return new Response('Missing required cookie in KV storage', { status: 500 });
+        console.error('Missing required cookie in KV storage');
+        return new Response('Missing required cookie in KV storage', {
+          status: 500,
+          headers: {
+            'Content-Type': 'text/plain',
+            'Access-Control-Allow-Origin': '*',
+          },
+        });
       }
   
-      // 准备发送到 AliExpress 的 FormData
+      console.log(`Retrieved Cookie from KV: ${cookie}`);
+  
+      // 构建上传表单数据
       const uploadFormData = new FormData();
       uploadFormData.append('file', imageFile, imageFile.name);
       uploadFormData.append('bizCode', 'ae_profile_avatar_upload');
   
-      // AliExpress 的上传 URL
       const uploadUrl = 'https://filebroker.aliexpress.com/x/upload?jiketuchuang=1';
   
-      // 发送请求到 AliExpress 接口
+      // 发送 POST 请求到 AliExpress API
       const response = await fetch(uploadUrl, {
         method: 'POST',
         body: uploadFormData,
         headers: {
           'Origin': 'https://filebroker.aliexpress.com',
-          'Cookie': cookie
-        }
+          'Cookie': cookie, // 使用 KV 中的 Cookie
+        },
       });
   
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`Upload failed: Status ${response.status}, Body: ${errorText}`);
+        return new Response(`Upload failed: HTTP error! Status: ${response.status}`, {
+          status: 500,
+          headers: {
+            'Content-Type': 'text/plain',
+            'Access-Control-Allow-Origin': '*',
+          },
+        });
       }
   
-      const result = await response.json();
+      const resultText = await response.text();
+      let result;
+      try {
+        result = JSON.parse(resultText);
+      } catch (parseError) {
+        console.error(`Error parsing response: ${parseError.message}, Response Text: ${resultText}`);
+        return new Response(`Upload failed: Error parsing response - ${parseError.message}`, {
+          status: 500,
+          headers: {
+            'Content-Type': 'text/plain',
+            'Access-Control-Allow-Origin': '*',
+          },
+        });
+      }
   
       if (result.url) {
-        // 如果成功，返回图片 URL
+        console.log(`Upload successful: ${result.url}`);
         return new Response(result.url, {
           status: 200,
-          headers: { 'Content-Type': 'text/plain' }
+          headers: {
+            'Content-Type': 'text/plain',
+            'Access-Control-Allow-Origin': '*',
+          },
         });
       } else {
-        // 如果没有返回 URL，则可能上传失败
-        return new Response('Upload failed: No URL returned', { status: 500 });
+        console.error(`Upload failed: No URL returned, Response: ${resultText}`);
+        return new Response('Upload failed: No URL returned', {
+          status: 500,
+          headers: {
+            'Content-Type': 'text/plain',
+            'Access-Control-Allow-Origin': '*',
+          },
+        });
       }
     } catch (error) {
-      console.error('Error in handleAliExpressRequest:', error);
-      return new Response(`Upload failed: ${error.message}`, { status: 500 });
+      console.error(`Error in handleAliExpressRequest: ${error.stack}`);
+      return new Response(`Upload failed: ${error.message}`, {
+        status: 500,
+        headers: {
+          'Content-Type': 'text/plain',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
     }
   }
   
