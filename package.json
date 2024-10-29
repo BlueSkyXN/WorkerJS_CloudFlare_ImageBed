@@ -1,6 +1,6 @@
 {
     "name": "workerjscloudflareimagebed",
-    "version": "1.0.0",
+    "version": "0.10.7",
     "description": "workerjscloudflareimagebed",
     "main": "index.js",
     "scripts": {
