@@ -8,7 +8,8 @@
       "build2": "node cloudflare-page-build/scripts/Build_Tools-TGPH.js",
       "build3": "node cloudflare-page-build/scripts/Build_Tools-IMGProxy.js",
       "build4": "node cloudflare-page-build/scripts/Build_Tools-GoogleCache.js",
-      "build": "npm run build1 && npm run build2 && npm run build3 && npm run build4"
+      "build5": "node cloudflare-page-build/scripts/Build_Tools-IMGTest.js",
+      "build": "npm run build1 && npm run build2 && npm run build3 && npm run build4 && npm run build5"
     },
     "author": "BlueSkyXN",
     "license": "GPLv3",

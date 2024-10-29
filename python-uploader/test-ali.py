@@ -3,7 +3,7 @@ import os
 import random
 
 # 上传图片的本地路径
-image_path = r"F:\Download\20241011-111233.jpg"
+image_path = r"C:\Users\SKY\Pictures\20240125-144244.jpg"
 
 # AliExpress 上传接口的 URL
 upload_url = "https://filebroker.aliexpress.com/x/upload?jiketuchuang=1"

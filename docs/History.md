@@ -16,3 +16,4 @@
 - 20240908 新增 da8m,qts8,vviptuangou三个，均来自之前的10086，今天发现他改版了
 - 20240912 新增 ipfs-img对接，来自 https://www.nodeseek.com/post-158028-1 ，TGPH临时修复方案，来自 https://www.nodeseek.com/post-159355-1
 - 20241014 新增 AliEx对接，来自 https://jike.info/topic/36748/ ;  另外发现10086图床对CF IP进行了封禁 error "您的IP已被封禁,请联系管理员" ； 新增JDKF对接，来自即刻图床插件
+- 20241029 移除了几个不支持的，新增了一个图片Test页面 https://imgup.pages.dev/test
