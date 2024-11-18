@@ -1,3 +1,7 @@
+"""
+  Authorization需要你注册登录 https://www.freebuf.com/ 获取，有效期不详，也许是一个月
+"""
+
 import requests
 import os
 import json
