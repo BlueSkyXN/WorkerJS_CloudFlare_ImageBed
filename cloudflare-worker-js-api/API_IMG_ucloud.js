@@ -1,5 +1,5 @@
 /*  
-  参考了即刻图床开源的京东客服接口 https://jike.info/topic/36738
+  参考了即刻图床开源的 https://jiketuchuang.com/ 的 2024年11月17日：新增UCS免登录接口
   模仿上述接口，实现与 UCloud 图片上传接口的集成
 */
 

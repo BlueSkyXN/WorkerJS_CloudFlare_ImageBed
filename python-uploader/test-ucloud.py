@@ -1,3 +1,6 @@
+"""
+参考了 https://jiketuchuang.com/ 的 2024年11月17日：新增UCS免登录接口
+"""
 import requests
 import uuid
 import os

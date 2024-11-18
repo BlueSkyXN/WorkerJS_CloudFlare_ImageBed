@@ -47,6 +47,9 @@ async function handleRequest(request) {
     case '/upload/aliex':
       response = await  handleAliExpressRequest(request);
       break;
+    case '/upload/ucloud':
+      response = await  handleUCloudRequest(request);
+      break;
     default:
       response = new Response('Not Found', { status: 404 });
       break;
