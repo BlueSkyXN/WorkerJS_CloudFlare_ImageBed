@@ -1,3 +1,12 @@
+/* 
+  接口来自 https://docs.filebase.com/ipfs-pinning/pinning-files#using-the-s3-compatible-api
+  注册免费账号即可，无需信用卡手机号，支持免费PLAN，包括1000文件数和5GB空间，平均5MB足够使用
+  管理时也可以直接用Alist等S3对接实现
+  本JS实现了在Cloudflare Worker中使用Filebase的S3 API上传文件到IPFS存储桶并返回IPFS CID以制作URL
+  需要的KV库是的名字是WORKER_IMGBED，KV库的内容是JSON格式的配置，包括accessKey、secretKey和bucket
+  bucket是存储桶名（自定义），accessKey和secretKey是Filebase的S3 API的凭证（随机分配，来自 https://console.filebase.com/keys 的key和Secret
+*/
+
 async function handles3filebaseRequest(request) {
     if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
       return new Response('Invalid request', { status: 400 });
