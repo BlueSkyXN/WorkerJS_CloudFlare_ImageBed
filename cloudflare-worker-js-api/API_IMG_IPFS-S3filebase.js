@@ -203,7 +203,7 @@ async function handles3filebaseRequest(request) {
           throw new Error('CID not found in response');
       }
 
-      const finalUrl = `https://i0.wp.com/i0.img2ipfs.com/ipfs/${cid}`;
+      const finalUrl = `https://ipfs.io/ipfs/${cid}`;
       console.log('[S3-Filebase] Generated final URL:', finalUrl);
       return new Response(finalUrl);
 
