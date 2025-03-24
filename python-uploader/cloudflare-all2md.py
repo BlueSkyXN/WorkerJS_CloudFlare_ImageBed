@@ -494,7 +494,7 @@ class AlltoMD:
                 
                 for file in files:
                     file_path = os.path.join(root, file)
-                    file_ext = os.path.splitext(file)[0].lower()
+                    file_ext = os.path.splitext(file)[1].lower()
                     
                     # 跳过不符合条件的文件
                     if file_ext not in SUPPORTED_FORMATS:
