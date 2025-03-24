@@ -71,7 +71,9 @@ SUPPORTED_FORMATS = {
 class CloudflareMarkdownConverter:
     """Cloudflare toMarkdown API封装类"""
     
-    def __init__(self, account_id: str, api_token: str, max_retries: int = 3, retry_delay: int = 2):
+    def __init__(self, account_id: str, api_token: str, max_retries: int = 3, retry_delay: int = 2, 
+                 http_proxy: Optional[str] = None, https_proxy: Optional[str] = None, 
+                 socks5_proxy: Optional[str] = None):
         """
         初始化转换器
         
@@ -80,6 +82,9 @@ class CloudflareMarkdownConverter:
             api_token (str): Cloudflare API令牌
             max_retries (int): 最大重试次数
             retry_delay (int): 重试延迟(秒)
+            http_proxy (str, optional): HTTP代理地址，格式为 "http://用户名:密码@主机:端口"
+            https_proxy (str, optional): HTTPS代理地址，格式为 "http://用户名:密码@主机:端口"
+            socks5_proxy (str, optional): SOCKS5代理地址，格式为 "主机:端口" 或 "用户名:密码@主机:端口"
         """
         self.account_id = account_id
         self.api_token = api_token
@@ -87,6 +92,25 @@ class CloudflareMarkdownConverter:
         self.retry_delay = retry_delay
         self.base_url = "https://api.cloudflare.com/client/v4/accounts"
         self.api_endpoint = f"{self.base_url}/{self.account_id}/ai/tomarkdown"
+        
+        # 配置代理
+        self.proxies = {}
+        if http_proxy:
+            self.proxies['http'] = http_proxy
+        if https_proxy:
+            self.proxies['https'] = https_proxy
+        if socks5_proxy:
+            # 确保SOCKS5代理地址格式正确
+            if not socks5_proxy.startswith('socks5://'):
+                # 检查是否包含用户名和密码
+                if '@' in socks5_proxy:
+                    auth, addr = socks5_proxy.split('@', 1)
+                    socks5_proxy = f"socks5://{auth}@{addr}"
+                else:
+                    socks5_proxy = f"socks5://{socks5_proxy}"
+            # 同时设置HTTP和HTTPS，都通过SOCKS5代理
+            self.proxies['http'] = socks5_proxy
+            self.proxies['https'] = socks5_proxy
         
         # 验证API凭证
         self._verify_credentials()
@@ -97,7 +121,8 @@ class CloudflareMarkdownConverter:
             # 使用账号API查询接口验证凭证有效性
             response = requests.get(
                 f"{self.base_url}/{self.account_id}",
-                headers=self._get_headers()
+                headers=self._get_headers(),
+                proxies=self.proxies
             )
             
             if response.status_code == 200:
@@ -157,6 +182,14 @@ class CloudflareMarkdownConverter:
         if not mime_type:
             mime_type = mimetypes.guess_type(file_path)[0] or "application/octet-stream"
         
+        # 获取文件大小并记录日志
+        file_size = os.path.getsize(file_path) / (1024 * 1024)  # 转换为MB
+        logger.debug(f"文件大小: {file_size:.2f} MB")
+        
+        # 如果文件过大，提供警告
+        if file_size > 50:
+            logger.warning(f"文件较大 ({file_size:.2f} MB)，可能会导致上传超时")
+        
         # 准备API请求 - 使用multipart/form-data格式
         file_name = os.path.basename(file_path)
         
@@ -170,11 +203,26 @@ class CloudflareMarkdownConverter:
                     files = {
                         'files': (file_name, f, mime_type)
                     }
-                    response = requests.post(
-                        self.api_endpoint,
-                        headers=self._get_headers(for_multipart=True),
-                        files=files
-                    )
+                    
+                    # 使用固定的宽裕超时设置 - 默认设置不依赖任何参数
+                    timeout_setting = (60, 600)  # 连接超时60秒，读取超时600秒（10分钟）
+                    
+                    logger.debug(f"使用超时设置: 连接={timeout_setting[0]}秒, 读取={timeout_setting[1]}秒")
+                    
+                    # 简单记录文件大小，但不做任何限制
+                    if file_size > 100:
+                        logger.info(f"处理大文件 ({file_size:.2f} MB)，可能需要更长时间")
+                    
+                    # 使用标准上传方式
+                    with open(file_path, 'rb') as f:
+                        files = {'files': (file_name, f, mime_type)}
+                        response = requests.post(
+                            self.api_endpoint,
+                            headers=self._get_headers(for_multipart=True),
+                            files=files,
+                            proxies=self.proxies,
+                            timeout=timeout_setting
+                        )
                 
                 # 检查响应状态
                 if response.status_code == 200:
@@ -194,26 +242,49 @@ class CloudflareMarkdownConverter:
                         logger.warning(f"API返回了空结果: {file_path}")
                         return None
                         
-                elif response.status_code == 429:
-                    # 遇到速率限制，等待更长时间再重试
-                    wait_time = self.retry_delay * (attempt + 2)
-                    logger.warning(f"API速率限制，等待 {wait_time} 秒后重试...")
-                    time.sleep(wait_time)
+                elif response.status_code == 413:
+                    logger.error(f"API拒绝请求：文件太大 (HTTP 413)")
+                    logger.debug(f"响应内容: {response.text}")
+                    # 文件太大错误通常无法通过重试解决
+                    break
+                    
+                elif response.status_code >= 500:
+                    logger.error(f"API服务器错误: HTTP状态码 {response.status_code}")
+                    logger.debug(f"响应内容: {response.text}")
+                    # 服务器错误，需要重试
+                    time.sleep(self.retry_delay * (attempt + 1))
                     
                 else:
                     logger.error(f"API调用失败: HTTP状态码 {response.status_code}")
                     logger.debug(f"响应内容: {response.text}")
                     
-                    # 如果不是临时错误，不再重试
-                    if response.status_code < 500:
+                    # 如果是客户端错误，并且不是临时的，不再重试
+                    if response.status_code >= 400 and response.status_code < 500:
                         break
                     
                     # 等待后重试
-                    time.sleep(self.retry_delay)
+                    time.sleep(self.retry_delay * (attempt + 1))
+                
+            except requests.exceptions.Timeout as e:
+                logger.error(f"请求超时: {str(e)}")
+                # 对于超时错误，增加等待时间再重试
+                wait_time = self.retry_delay * (attempt + 2)
+                logger.info(f"等待 {wait_time} 秒后重试...")
+                time.sleep(wait_time)
+                
+            except requests.exceptions.ConnectionError as e:
+                logger.error(f"连接错误: {str(e)}")
+                # 检查是否与代理相关
+                if "proxy" in str(e).lower():
+                    logger.warning("可能是代理服务器问题，请检查代理配置或使用--timeout参数增加超时时间")
+                # 对于连接错误，增加等待时间再重试
+                wait_time = self.retry_delay * (attempt + 2)
+                logger.info(f"等待 {wait_time} 秒后重试...")
+                time.sleep(wait_time)
                 
             except Exception as e:
                 logger.error(f"API调用过程中发生错误: {str(e)}")
-                time.sleep(self.retry_delay)
+                time.sleep(self.retry_delay * (attempt + 1))
         
         logger.error(f"转换失败 (已重试 {self.max_retries} 次): {file_path}")
         return None
@@ -312,6 +383,14 @@ class AlltoMD:
         parser.add_argument('--retry-delay', type=int, default=2, 
                            help='重试之间的延迟秒数（默认: 2）')
         
+        # 代理参数
+        parser.add_argument('--http-proxy', 
+                           help='HTTP代理，格式为 "http://用户名:密码@主机:端口" 或 "http://主机:端口"')
+        parser.add_argument('--https-proxy', 
+                           help='HTTPS代理，格式为 "http://用户名:密码@主机:端口" 或 "http://主机:端口"')
+        parser.add_argument('--socks5-proxy', 
+                           help='SOCKS5代理，格式为 "用户名:密码@主机:端口" 或 "主机:端口"')
+        
         # 其他参数
         parser.add_argument('-v', '--verbose', action='store_true', 
                            help='启用详细日志输出')
@@ -337,7 +416,10 @@ class AlltoMD:
             account_id=self.args.account_id,
             api_token=self.args.api_token,
             max_retries=self.args.retry,
-            retry_delay=self.args.retry_delay
+            retry_delay=self.args.retry_delay,
+            http_proxy=self.args.http_proxy,
+            https_proxy=self.args.https_proxy,
+            socks5_proxy=self.args.socks5_proxy
         )
         
         return self.args
@@ -466,13 +548,19 @@ class AlltoMD:
         successful = 0
         failed = 0
         
+        # 确定并行任务数量
+        jobs = min(self.args.jobs, len(files_to_process))
+        logger.debug(f"使用 {jobs} 个并行任务处理 {len(files_to_process)} 个文件")
+        
         # 使用线程池并行处理文件
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self.args.jobs) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as executor:
+            # 提交所有任务
             future_to_file = {
                 executor.submit(self.converter.convert_and_save, input_file, output_file): (input_file, output_file)
                 for input_file, output_file in files_to_process
             }
             
+            # 处理完成的任务结果
             for future in concurrent.futures.as_completed(future_to_file):
                 input_file, output_file = future_to_file[future]
                 
