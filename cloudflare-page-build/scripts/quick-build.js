@@ -50,9 +50,13 @@ fs.readFile(destPath, 'utf8', function (err, data) {
     const resultWithEndpoint = data.replace(/{{API_ENDPOINT_BASE64}}/g, finalApiEndpoint);
     // 在HTML文件内容中查找{{API_PASSWORD_BASE64}}占位符，并用最终确定的Base64编码值替换它
     const resultWithPassword = resultWithEndpoint.replace(/{{API_PASSWORD_BASE64}}/g, finalApiPassword);
+    // 处理广告脚本 - 默认保留，使用NOAD=TRUE移除
+    const finalResult = process.env.NOAD === 'TRUE' 
+        ? resultWithPassword.replace(/\s*<script async src="https:\/\/js\.wpadmngr\.com\/static\/adManager\.js" data-admpid="230947"><\/script>\s*/g, '')
+        : resultWithPassword;
 
     // 将修改后的内容写回文件
-    fs.writeFile(destPath, resultWithPassword, 'utf8', function (err) {
+    fs.writeFile(destPath, finalResult, 'utf8', function (err) {
          if (err) return console.log(err);
          // 解码finalApiEndpoint以显示实际URL
          const actualEndpoint = Buffer.from(finalApiEndpoint, 'base64').toString('utf8');
@@ -60,5 +64,6 @@ fs.readFile(destPath, 'utf8', function (err, data) {
          const actualPassword = Buffer.from(finalApiPassword, 'base64').toString('utf8');
          console.log(`API_ENDPOINT_BASE64已替换为: ${finalApiEndpoint}, 实际Endpoint是: ${actualEndpoint} 并保存到: ${destPath}`);
          console.log(`API_PASSWORD_BASE64已替换为: ${finalApiPassword}, 实际密码是: ${actualPassword} 并保存到: ${destPath}`);
+         console.log(`广告脚本控制: ${process.env.NOAD === 'TRUE' ? '已移除' : '保留'}`);
     });
 });
