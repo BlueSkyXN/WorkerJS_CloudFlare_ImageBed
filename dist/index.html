@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneAPI File Uploader</title>
+    <!-- 
+        本代码完全开源，仅供学习CloudFlare Page和Worker组件编程使用
+        仓库地址 https://github.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed
+        不提供任何免费的技术支持、指导、问题解答，请按GitHub标准用法进行issue等方式交互
+        请勿滥用本代码，违规使用后果自负，任何操作和后果均与本人无关
+        API接口均需要使用者自行解决，本人不提供任何API接口服务
+        不得在中国大陆地区使用本代码
+    -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css">
+    <script async src="https://js.wpadmngr.com/static/adManager.js" data-admpid="230947"></script>
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+        .result-item {
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        .preview-container {
+            max-width: calc(100% - 20px);
+            max-height: calc(8 * 50px);
+            overflow: hidden;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .preview-img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+        .copy-button, .file-name, .file-url {
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        .copy-button {
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <a href="https://github.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed" target="_blank" title="Visit GitHub Repository">
+        <img src="https://icons.iconarchive.com/icons/iconoir-team/iconoir/48/github-circle-icon.png" width="48" height="48">
+    </a>
+    <div class="container">
+        <h2>File Upload</h2>
+        <form id="upload-form">
+            <div class="form-group">
+                <label for="apiUrl">API Endpoint</label>
+                <input type="text" class="form-control" id="apiUrl" placeholder="Input API Endpoint with http(s)://***.***" required>
+            </div>
+            <div class="form-group">
+                <label for="apiPassword">API Password</label>
+                <input type="text" class="form-control" id="apiPassword" placeholder="Enter API Password">
+            </div>
+            <div class="form-group">
+                <label for="fileInput">Select Files</label>
+                <input type="file" class="form-control-file" id="fileInput" multiple required>
+            </div>
+            <div class="form-group">
+                <label for="apiSelect">Select Endpoint</label>
+                <select class="form-control" id="apiSelect">
+                    <option value="ipfs">IPFS-去中心化多网关兼容</option>
+                    <option value="58img">58img-定期删图</option>
+                    <option value="ucloud">Ucloud</option>
+                    <option value="tgphimg">TGPH-Debug通道-短时间删图</option>
+                    <option value="3001">3001-Freebuf-国内CDN-不提供账号请自行部署后端</option>
+                    <option value="aliex">AliEx-国内CDN国外Akamai-不提供账号请自行部署后端</option>
+                    <option value="s3ipfs">Filebase-IPFS</option>
+                </select>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="enablePreview">
+                <label class="form-check-label" for="enablePreview">
+                    Preview
+                </label>
+            </div>
+            <button type="submit" class="btn btn-primary">Upload</button>
+            <button type="button" class="btn btn-info" onclick="window.location.href='/tools/imgproxy';">IMGProxy</button>
+            <button type="button" class="btn btn-info" onclick="window.location.href='https://www.bestipfs.net';">IPFS</button>
+            <button type="button" class="btn btn-info" onclick="window.location.href='/tools/test';">IMG-Test</button>
+            <button type="button" id="convertButton" class="btn btn-success" style="display: none;">TGPH</button>
+        </form>
+        <div id="result" class="mt-3">
+            <!-- 上传结果将显示在这里 -->
+        </div>
+    </div>
+
+    <!-- 引入 jQuery 和 Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            updateConvertButtonVisibility(); // 页面加载时更新按钮状态
+            setApiUrl();
+            setApiPassword();
+            document.getElementById('apiSelect').addEventListener('change', updateConvertButtonVisibility);
+            document.getElementById('upload-form').addEventListener('submit', handleFormSubmit);
+            document.getElementById('convertButton').addEventListener('click', function() {
+                // 在新窗口中打开 /tools/tgph 的 URL
+                window.open('/tools/tgph', '_blank');
+            });
+        });
+        function setApiUrl() {
+            const encodedApiEndpoint = 'aHR0cHM6Ly9naXRodWIuY29tL0JsdWVTa3lYTi9Xb3JrZXJKU19DbG91ZEZsYXJlX0ltYWdlQmVk'; // 将"您的Base64编码字符串"替换为实际的Base64编码后的API地址
+            const decodedApiEndpoint = atob(encodedApiEndpoint);
+            document.getElementById('apiUrl').value = decodedApiEndpoint;
+        }
+        function setApiPassword() {
+            const encodedApiPassword = 'MTIzNDU2'; // 将这里替换为您的Base64编码后的API密码
+            const decodedApiPassword = atob(encodedApiPassword); // 使用atob函数解码Base64字符串
+            document.getElementById('apiPassword').value = decodedApiPassword; // 设置解码后的密码到密码输入框
+        }
+        function updateConvertButtonVisibility() {
+            const convertButton = document.getElementById('convertButton');
+            const apiSelect = document.getElementById('apiSelect').value;
+            convertButton.style.display = apiSelect === 'tgphimg' ? '' : 'none';
+        }
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const apiUrlInput = document.getElementById('apiUrl');
+            const fileInput = document.getElementById('fileInput');
+            const apiSelect = document.getElementById('apiSelect');
+            const resultContainer = document.getElementById('result');
+            const enablePreview = document.getElementById('enablePreview').checked;
+            // 清除旧的结果
+            resultContainer.innerHTML = '';
+            resultContainer.style.display = 'none';
+            for (const file of fileInput.files) {
+                const formData = new FormData();
+                formData.append('image', file);
+                const apiUrl = `${apiUrlInput.value}/upload/${apiSelect.value}`;
+                console.log('API URL:', apiUrl);
+                fetch(apiUrl, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                        'Authorization': 'Bearer ' + document.getElementById('apiPassword').value // 使用密码输入框中的密码作为请求头中的密码
+                    }
+                })
+                .then(response => response.text())
+                .then(data => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    const resultContent = `
+                        <div>
+                            <button class="btn btn-success mr-2 copy-button" onclick="copyUrl(this)">COPY URL</button>
+                            <span class="mr-2 file-name">${file.name}</span>
+                        </div>
+                        <div class="file-url">
+                            <input type="text" class="form-control" value="${data}" readonly>
+                        </div>
+                    `;
+                    resultItem.innerHTML = resultContent;
+                    if (enablePreview) {
+                        const preview = document.createElement('div');
+                        preview.className = 'preview-container';
+                        const previewImg = document.createElement('img');
+                        previewImg.src = data;
+                        previewImg.className = 'preview-img';
+                        preview.appendChild(previewImg);
+                        resultItem.appendChild(preview);
+                    }
+                    resultContainer.appendChild(resultItem);
+                    resultContainer.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    resultItem.innerHTML = `<input type="text" class="form-control" value="文件 ${file.name} 上传失败" readonly>`;
+                    resultContainer.appendChild(resultItem);
+                    resultContainer.style.display = 'block';
+                });
+            }
+        }
+        function copyUrl(button) {
+            const copyText = button.parentElement.nextElementSibling.querySelector('input');
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+        }
+    </script>    
+</body>
+</html>

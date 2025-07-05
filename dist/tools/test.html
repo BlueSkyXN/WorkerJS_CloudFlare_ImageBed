@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>多接口图床可用性检测</title>
+    <!-- 全局设置 -->
+    <!-- 注意：此处不设置全局referrerpolicy，以便分别测试带Referer和不带Referer的情况 -->
+    <!-- 字体和基本样式 -->
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+            Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            background-color: #f6f9fc;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        h1 {
+            color: #32325d;
+            text-align: center;
+        }
+        .upload-time {
+            text-align: center;
+            color: #525f7f;
+            margin-bottom: 40px;
+        }
+        .image-card {
+            display: flex;
+            justify-content: space-between;
+            background-color: #ffffff;
+            border: 1px solid #e6ebf1;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: box-shadow 0.2s ease;
+        }
+        .image-card:hover {
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11),
+                        0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .image-section {
+            width: 48%;
+        }
+        .image-section h2 {
+            font-size: 18px;
+            color: #32325d;
+            margin-bottom: 10px;
+        }
+        .image-section p {
+            color: #525f7f;
+            line-height: 1.6;
+            word-break: break-all;
+        }
+        .image-section a {
+            color: #6772e5;
+            text-decoration: none;
+        }
+        .image-section a:hover {
+            text-decoration: underline;
+        }
+        .image-preview {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .image-preview img {
+            max-width: 100%;
+            max-height: 200px; /* 限制图片最大高度 */
+            width: auto;
+            height: auto;
+            border-radius: 4px;
+            border: 1px solid #e6ebf1;
+        }
+        .status {
+            margin-top: 5px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .status.ok {
+            color: #28a745;
+        }
+        .status.error {
+            color: #dc3545;
+        }
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .image-card {
+                flex-direction: column;
+            }
+            .image-section {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>多接口图床可用性检测</h1>
+        <p class="upload-time">上传时间：2024年10月29日</p>
+
+        <!-- IPFS -->
+        <div class="image-card">
+            <!-- 带Referer的检测 -->
+            <div class="image-section">
+                <h2>IPFS - 带Referer</h2>
+                <p>图片URL：<a href="https://i0.img2ipfs.com/ipfs/QmUFcsbncWVhja1xGGeHSxEk1MpGDhtSAaWhP8418vS7hz" target="_blank">https://i0.img2ipfs.com/ipfs/QmUFcsbncWVhja1xGGeHSxEk1MpGDhtSAaWhP8418vS7hz</a></p>
+                <div class="image-preview">
+                    <img src="https://i0.img2ipfs.com/ipfs/QmUFcsbncWVhja1xGGeHSxEk1MpGDhtSAaWhP8418vS7hz" alt="图片预览">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+            <!-- 不带Referer的检测 -->
+            <div class="image-section">
+                <h2>IPFS - 不带Referer</h2>
+                <p>图片URL：<a href="https://i0.img2ipfs.com/ipfs/QmUFcsbncWVhja1xGGeHSxEk1MpGDhtSAaWhP8418vS7hz" target="_blank" referrerpolicy="no-referrer">https://i0.img2ipfs.com/ipfs/QmUFcsbncWVhja1xGGeHSxEk1MpGDhtSAaWhP8418vS7hz</a></p>
+                <div class="image-preview">
+                    <img src="https://i0.img2ipfs.com/ipfs/QmUFcsbncWVhja1xGGeHSxEk1MpGDhtSAaWhP8418vS7hz" alt="图片预览" referrerpolicy="no-referrer">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+        </div>
+
+        <!-- IPFS-WP -->
+        <div class="image-card">
+            <div class="image-section">
+                <h2>IPFS-WP - 带Referer</h2>
+                <p>图片URL：<a href="https://i0.wp.com/eth.sucks/ipfs/QmUFcsbncWVhja1xGGeHSxEk1MpGDhtSAaWhP8418vS7hz" target="_blank">https://i0.wp.com/eth.sucks/ipfs/QmUFcsbncWVhja1xGGeHSxEk1MpGDhtSAaWhP8418vS7hz</a></p>
+                <div class="image-preview">
+                    <img src="https://i0.wp.com/eth.sucks/ipfs/QmUFcsbncWVhja1xGGeHSxEk1MpGDhtSAaWhP8418vS7hz" alt="图片预览">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+            <div class="image-section">
+                <h2>IPFS-WP - 不带Referer</h2>
+                <p>图片URL：<a href="https://i0.wp.com/eth.sucks/ipfs/QmUFcsbncWVhja1xGGeHSxEk1MpGDhtSAaWhP8418vS7hz" target="_blank" referrerpolicy="no-referrer">https://i0.wp.com/eth.sucks/ipfs/QmUFcsbncWVhja1xGGeHSxEk1MpGDhtSAaWhP8418vS7hz</a></p>
+                <div class="image-preview">
+                    <img src="https://i0.wp.com/eth.sucks/ipfs/QmUFcsbncWVhja1xGGeHSxEk1MpGDhtSAaWhP8418vS7hz" alt="图片预览" referrerpolicy="no-referrer">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+        </div>
+
+        <!-- 58IMG -->
+        <div class="image-card">
+            <div class="image-section">
+                <h2>58IMG - 带Referer</h2>
+                <p>图片URL：<a href="https://pic4.58cdn.com.cn/nowater/webim/big/n_v2c38aa1ba1eda4f9b92c9e97d36c85c17.jpg" target="_blank">https://pic4.58cdn.com.cn/nowater/webim/big/n_v2c38aa1ba1eda4f9b92c9e97d36c85c17.jpg</a></p>
+                <div class="image-preview">
+                    <img src="https://pic4.58cdn.com.cn/nowater/webim/big/n_v2c38aa1ba1eda4f9b92c9e97d36c85c17.jpg" alt="图片预览">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+            <div class="image-section">
+                <h2>58IMG - 不带Referer</h2>
+                <p>图片URL：<a href="https://pic4.58cdn.com.cn/nowater/webim/big/n_v2c38aa1ba1eda4f9b92c9e97d36c85c17.jpg" target="_blank" referrerpolicy="no-referrer">https://pic4.58cdn.com.cn/nowater/webim/big/n_v2c38aa1ba1eda4f9b92c9e97d36c85c17.jpg</a></p>
+                <div class="image-preview">
+                    <img src="https://pic4.58cdn.com.cn/nowater/webim/big/n_v2c38aa1ba1eda4f9b92c9e97d36c85c17.jpg" alt="图片预览" referrerpolicy="no-referrer">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+        </div>
+
+        <!-- AliEx -->
+        <div class="image-card">
+            <div class="image-section">
+                <h2>AliEx - 带Referer</h2>
+                <p>图片URL：<a href="https://ae01.alicdn.com/kf/A632c7925ee60472e9059db35e0c6dc50p.jpg" target="_blank">https://ae01.alicdn.com/kf/A632c7925ee60472e9059db35e0c6dc50p.jpg</a></p>
+                <div class="image-preview">
+                    <img src="https://ae01.alicdn.com/kf/A632c7925ee60472e9059db35e0c6dc50p.jpg" alt="图片预览">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+            <div class="image-section">
+                <h2>AliEx - 不带Referer</h2>
+                <p>图片URL：<a href="https://ae01.alicdn.com/kf/A632c7925ee60472e9059db35e0c6dc50p.jpg" target="_blank" referrerpolicy="no-referrer">https://ae01.alicdn.com/kf/A632c7925ee60472e9059db35e0c6dc50p.jpg</a></p>
+                <div class="image-preview">
+                    <img src="https://ae01.alicdn.com/kf/A632c7925ee60472e9059db35e0c6dc50p.jpg" alt="图片预览" referrerpolicy="no-referrer">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+        </div>
+
+        <!-- JDKF -->
+        <div class="image-card">
+            <div class="image-section">
+                <h2>JDKF - 带Referer</h2>
+                <p>图片URL：<a href="https://kefu-jtalk.jd.com/upload/202410/1029104105998-20241029104106000.jpeg" target="_blank">https://kefu-jtalk.jd.com/upload/202410/1029104105998-20241029104106000.jpeg</a></p>
+                <div class="image-preview">
+                    <img src="https://kefu-jtalk.jd.com/upload/202410/1029104105998-20241029104106000.jpeg" alt="图片预览">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+            <div class="image-section">
+                <h2>JDKF - 不带Referer</h2>
+                <p>图片URL：<a href="https://kefu-jtalk.jd.com/upload/202410/1029104105998-20241029104106000.jpeg" target="_blank" referrerpolicy="no-referrer">https://kefu-jtalk.jd.com/upload/202410/1029104105998-20241029104106000.jpeg</a></p>
+                <div class="image-preview">
+                    <img src="https://kefu-jtalk.jd.com/upload/202410/1029104105998-20241029104106000.jpeg" alt="图片预览" referrerpolicy="no-referrer">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+        </div>
+
+        <!-- TGPH -->
+        <div class="image-card">
+            <div class="image-section">
+                <h2>TGPH - 带Referer</h2>
+                <p>图片URL：<a href="https://telegra.ph/file/cba86a5f06c24dac99ecc-54641be50efaccd63d.jpg" target="_blank">https://telegra.ph/file/cba86a5f06c24dac99ecc-54641be50efaccd63d.jpg</a></p>
+                <div class="image-preview">
+                    <img src="https://telegra.ph/file/cba86a5f06c24dac99ecc-54641be50efaccd63d.jpg" alt="图片预览">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+            <div class="image-section">
+                <h2>TGPH - 不带Referer</h2>
+                <p>图片URL：<a href="https://telegra.ph/file/cba86a5f06c24dac99ecc-54641be50efaccd63d.jpg" target="_blank" referrerpolicy="no-referrer">https://telegra.ph/file/cba86a5f06c24dac99ecc-54641be50efaccd63d.jpg</a></p>
+                <div class="image-preview">
+                    <img src="https://telegra.ph/file/cba86a5f06c24dac99ecc-54641be50efaccd63d.jpg" alt="图片预览" referrerpolicy="no-referrer">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+        </div>
+
+        <!-- vviptuangou -->
+        <div class="image-card">
+            <div class="image-section">
+                <h2>vviptuangou - 带Referer</h2>
+                <p>图片URL：<a href="https://assets.vviptuangou.com/c2ab03e2d62c6fddb35494935a6d9ae6eb0813e1.jpg" target="_blank">https://assets.vviptuangou.com/c2ab03e2d62c6fddb35494935a6d9ae6eb0813e1.jpg</a></p>
+                <div class="image-preview">
+                    <img src="https://assets.vviptuangou.com/c2ab03e2d62c6fddb35494935a6d9ae6eb0813e1.jpg" alt="图片预览">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+            <div class="image-section">
+                <h2>vviptuangou - 不带Referer</h2>
+                <p>图片URL：<a href="https://assets.vviptuangou.com/c2ab03e2d62c6fddb35494935a6d9ae6eb0813e1.jpg" target="_blank" referrerpolicy="no-referrer">https://assets.vviptuangou.com/c2ab03e2d62c6fddb35494935a6d9ae6eb0813e1.jpg</a></p>
+                <div class="image-preview">
+                    <img src="https://assets.vviptuangou.com/c2ab03e2d62c6fddb35494935a6d9ae6eb0813e1.jpg" alt="图片预览" referrerpolicy="no-referrer">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+        </div>
+
+        <!-- da8m -->
+        <div class="image-card">
+            <div class="image-section">
+                <h2>da8m - 带Referer</h2>
+                <p>图片URL：<a href="https://assets.da8m.cn/c2ab03e2d62c6fddb35494935a6d9ae6eb0813e1.jpg" target="_blank">https://assets.da8m.cn/c2ab03e2d62c6fddb35494935a6d9ae6eb0813e1.jpg</a></p>
+                <div class="image-preview">
+                    <img src="https://assets.da8m.cn/c2ab03e2d62c6fddb35494935a6d9ae6eb0813e1.jpg" alt="图片预览">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+            <div class="image-section">
+                <h2>da8m - 不带Referer</h2>
+                <p>图片URL：<a href="https://assets.da8m.cn/c2ab03e2d62c6fddb35494935a6d9ae6eb0813e1.jpg" target="_blank" referrerpolicy="no-referrer">https://assets.da8m.cn/c2ab03e2d62c6fddb35494935a6d9ae6eb0813e1.jpg</a></p>
+                <div class="image-preview">
+                    <img src="https://assets.da8m.cn/c2ab03e2d62c6fddb35494935a6d9ae6eb0813e1.jpg" alt="图片预览" referrerpolicy="no-referrer">
+                </div>
+                <p class="status">检测中...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript部分 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageCards = document.querySelectorAll('.image-card');
+
+            imageCards.forEach(card => {
+                const sections = card.querySelectorAll('.image-section');
+
+                sections.forEach(section => {
+                    const img = section.querySelector('img');
+                    const statusElem = section.querySelector('.status');
+                    const imageUrl = img.src;
+
+                    // 创建一个新的Image对象，用于检测图片加载
+                    const testImg = new Image();
+
+                    // 如果img标签有referrerpolicy属性，设置到testImg
+                    const referrerPolicy = img.getAttribute('referrerpolicy');
+                    if (referrerPolicy) {
+                        testImg.referrerPolicy = referrerPolicy;
+                    }
+
+                    testImg.onload = function() {
+                        statusElem.textContent = '图片加载成功';
+                        statusElem.classList.remove('error');
+                        statusElem.classList.add('ok');
+                    };
+
+                    testImg.onerror = function(event) {
+                        // 尝试获取HTTP状态码
+                        fetch(imageUrl, {
+                            method: 'HEAD',
+                            referrerPolicy: referrerPolicy || 'strict-origin-when-cross-origin',
+                        })
+                        .then(response => {
+                            let errorMessage = '图片加载失败';
+                            if (!response.ok) {
+                                errorMessage += `，状态码：${response.status}`;
+                            } else {
+                                errorMessage += '，状态码：未知';
+                            }
+                            statusElem.textContent = errorMessage;
+                            statusElem.classList.remove('ok');
+                            statusElem.classList.add('error');
+                        })
+                        .catch(error => {
+                            let errorMessage = `图片加载失败，错误信息：${error.message.substring(0, 50)}`;
+                            statusElem.textContent = errorMessage;
+                            statusElem.classList.remove('ok');
+                            statusElem.classList.add('error');
+                        });
+                    };
+
+                    // 设置图片源，开始加载
+                    testImg.src = imageUrl;
+                });
+            });
+        });
+    </script>
+</body>
+</html>
