@@ -50,7 +50,7 @@ async function handleAliExpressRequest(request) {
       });
     }
 
-    console.log(`Retrieved Cookie from KV: ${cookie}`);
+    console.log('Retrieved Cookie from KV: [REDACTED FOR SECURITY]');
 
     // 构建上传表单数据
     const uploadFormData = new FormData();

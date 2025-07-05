@@ -63,7 +63,8 @@ fs.readFile(destPath, 'utf8', function (err, data) {
          // 解码finalApiPassword以显示实际密码
          const actualPassword = Buffer.from(finalApiPassword, 'base64').toString('utf8');
          console.log(`API_ENDPOINT_BASE64已替换为: ${finalApiEndpoint}, 实际Endpoint是: ${actualEndpoint} 并保存到: ${destPath}`);
-         console.log(`API_PASSWORD_BASE64已替换为: ${finalApiPassword}, 实际密码是: ${actualPassword} 并保存到: ${destPath}`);
+         // 安全改进：不在日志中输出明文密码
+         console.log(`API_PASSWORD_BASE64已成功替换并保存到: ${destPath}`);
          console.log(`广告脚本控制: ${process.env.NOAD === 'TRUE' ? '已移除' : '保留'}`);
     });
 });
