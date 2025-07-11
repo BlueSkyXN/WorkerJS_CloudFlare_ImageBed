@@ -1,54 +1,129 @@
-# 项目基本架构
-对于最新的Page+Worker完全无服务器前后端实现方案来说
+# CloudFlare 无服务器图床部署指南
 
-主要的文件包括
-- `cloudflare-page/OneAPI-imgbed-MIX.html` 集成前端HTML，需要放在CloudFlare Page上
-- `cloudflare-worker-js-api/worker.js` All in One的后端JS，需要放在CloudFlare Worker上，受到Worker免费次数限制，建议自行搭建
-  
-其他小工具
-- `cloudflare-page/Tools-TGPH.html` 用于转换TGPH图片加速的转换器，需要放在CloudFlare Page上
-- `cloudflare-page/Tools-IMGProxy.html` 用于转换任意图片加速的转换器，需要放在CloudFlare Page上
-- `cloudflare-page/Tools-GoogleCache.html` 谷歌页面缓存一键计算器，需要放在CloudFlare Page上
+## 概述
 
-# 后端部署
+本项目基于 CloudFlare Pages + Worker 的完全无服务器架构，提供前后端分离的图床解决方案。
 
-非必要，仅你希望使用大量API操作或者demo测试api死亡时才需要自己部署后端
+## 项目架构
 
-前端可以直接用我的 https://imgup.pages.dev 自己填写自己部署的API接口和对应的密码
+### 核心文件
 
-- 任意起一个Worker项目，复制 `cloudflare-worker-js-api/worker.js` 的文件内容进去，cf账号没什么要求，新号都行，无需付费
-- 然后记住你的worker的url，不需要带结尾的斜杠/
-- 然后在环境变量处，新增你的密码，密码要求明文，密码的变量名默认是 `API_PASSWORD`, 前端默认密码是123456
-- 该JS的上传对接需要在Authorization通过Bearer附带验证TOKEN，也就是密码（我提供的前端已内置计算）
-- 该JS的上传统一是上传二进制文件，默认字段名是image，后端不校验文件类型和文件名，JS自行重新计算上传方法并返回有效URL（我提供的前端已内置计算）
+| 文件 | 用途 | 部署位置 |
+|------|------|----------|
+| `cloudflare-page/OneAPI-imgbed-MIX.html` | 集成前端界面 | CloudFlare Pages |
+| `cloudflare-worker-js-api/worker.js` | 后端API服务 | CloudFlare Worker |
 
-# 前端部署
+### 辅助工具
 
-非必要，仅你希望更改默认的预设API接口和密码时才考虑自己部署前端
+| 文件 | 功能 | 部署位置 |
+|------|------|----------|
+| `cloudflare-page/Tools-TGPH.html` | Telegraph图片加速转换器 | CloudFlare Pages |
+| `cloudflare-page/Tools-IMGProxy.html` | 通用图片加速转换器 | CloudFlare Pages |
+| `cloudflare-page/Tools-GoogleCache.html` | 谷歌缓存页面计算器 | CloudFlare Pages |
 
-## 青春版
-- `cloudflare-page/OneAPI-imgbed-MIX.html` 放在你新建的GIT仓库
-- `cloudflare-page/OneAPI-imgbed-MIX.html` 重命名为index.html
-- 修改106行左右的 `{{API_ENDPOINT_BASE64}}`和111行左右的`{{API_PASSWORD_BASE64}}`，这两个需要是Base64后的值
-- 需要TGPH转换器的，把`cloudflare-worker-js-api/worker.js`放在新建的`tools`目录下，并重命名为`tgph.html`
-- cloudflare page 构建无需任何命令，空即可，同样适用于任何可执行HTML和JS的环境
+## 后端部署 (Worker)
 
-## 标准版
+### 使用场景
+- 需要大量API操作
+- 测试公共API失效时的备用方案
+- 需要自定义配置
 
-- 复制开头的基本架构中指出的主要文件到一致的相对路径
-- 复制`cloudflare-page-build`目录和它的全部下属文件到一致的相对路径
-- 复制`package.json` 到新仓库的根目录
-- cloudflare page 构建命令 `npm run build`
-- cloudflare page 构建输出目录 `/dist`
-- cloudflare page 构建根目录 `/`
-- cloudflare page 环境变量`API_ENDPOINT_BASE64`或者`API_ENDPOINT`，前者优先，存放预设API接口，原始信息比如 `https://api.test.workers.dev`
-- cloudflare page 环境变量`API_PASSWORD_BASE64`或者`API_PASSWORD`，前者优先，存放预设API密码，原始信息比如 `123456`
+### 部署步骤
 
-## 完整版
-- Fork完整仓库
-- 在cloudflare面板绑定仓库并手动配置，配置信息如下
-- cloudflare page 构建命令 `npm run build`
-- cloudflare page 构建输出目录 `/dist`
-- cloudflare page 构建根目录 `/`
-- cloudflare page 环境变量`API_ENDPOINT_BASE64`或者`API_ENDPOINT`，前者优先，存放预设API接口，原始信息比如 `https://api.test.workers.dev`
-- cloudflare page 环境变量`API_PASSWORD_BASE64`或者`API_PASSWORD`，前者优先，存放预设API密码，原始信息比如 `123456`
+1. **创建Worker项目**
+   - 登录CloudFlare控制台，创建新的Worker项目
+   - 复制 `cloudflare-worker-js-api/worker.js` 内容到编辑器
+
+2. **配置环境变量**
+   - 变量名: `API_PASSWORD`
+   - 值: 自定义密码（明文）
+   - 默认密码: `123456`
+
+3. **部署访问**
+   - 保存并部署Worker
+   - 记录Worker URL（无需结尾斜杠）
+
+### 技术规范
+- **认证方式**: Bearer Token (通过Authorization头)
+- **上传格式**: 二进制文件，字段名为 `image`
+- **文件限制**: 不校验文件类型和文件名
+- **响应格式**: 返回可访问的图片URL
+
+## 前端部署 (Pages)
+
+### 使用场景
+- 需要修改默认API接口配置
+- 需要自定义密码预设
+- 需要品牌化定制
+
+### 部署方案
+
+#### 方案一：青春版 (静态HTML)
+
+**适用场景**: 快速部署，无需构建过程
+
+**部署步骤**:
+1. 创建新的Git仓库
+2. 将 `cloudflare-page/OneAPI-imgbed-MIX.html` 重命名为 `index.html`
+3. 修改配置参数（第106行和111行）:
+   - `{{API_ENDPOINT_BASE64}}`: Base64编码的API接口地址
+   - `{{API_PASSWORD_BASE64}}`: Base64编码的API密码
+4. (可选) 添加TGPH转换器到 `tools/tgph.html`
+
+**CloudFlare Pages配置**:
+- 构建命令: 留空
+- 输出目录: `/`
+- 根目录: `/`
+
+#### 方案二：标准版 (构建版本)
+
+**适用场景**: 需要构建优化，支持环境变量
+
+**部署步骤**:
+1. 复制所需文件到新仓库:
+   - 核心文件（见项目架构）
+   - `cloudflare-page-build/` 目录
+   - `package.json`
+
+**CloudFlare Pages配置**:
+- 构建命令: `npm run build`
+- 输出目录: `/dist`
+- 根目录: `/`
+
+**环境变量配置**:
+| 变量名 | 优先级 | 说明 | 示例 |
+|--------|--------|------|------|
+| `API_ENDPOINT_BASE64` | 高 | Base64编码的API接口 | - |
+| `API_ENDPOINT` | 低 | 原始API接口地址 | `https://api.test.workers.dev` |
+| `API_PASSWORD_BASE64` | 高 | Base64编码的API密码 | - |
+| `API_PASSWORD` | 低 | 原始API密码 | `123456` |
+
+#### 方案三：完整版 (Fork仓库)
+
+**适用场景**: 完整功能，持续更新
+
+**部署步骤**:
+1. Fork完整仓库
+2. 在CloudFlare Pages中连接仓库
+3. 配置构建设置（同标准版）
+4. 设置环境变量（同标准版）
+
+## 快速开始
+
+### 仅使用前端
+直接访问: https://imgup.pages.dev
+- 填入自己的API接口地址
+- 输入对应的密码
+- 开始使用
+
+### 完整部署
+1. 先部署Worker后端（获取API地址）
+2. 再部署Pages前端（配置API地址）
+3. 测试上传功能
+
+## 注意事项
+
+- Worker免费版有请求次数限制
+- 环境变量中Base64编码的配置优先级更高
+- 密码需要明文存储在环境变量中
+- 所有图床API都通过统一接口访问
