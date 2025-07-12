@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TGPH URL Transformer</title>
+    <!-- INFO -->
+    <!-- 
+        本代码完全开源，仅供学习CloudFlare Page和Worker组件编程使用
+        仓库地址 https://github.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed
+        不提供任何免费的技术支持、指导、问题解答，请按GitHub标准用法进行issue等方式交互
+        请勿滥用本代码，违规使用后果自负，任何操作和后果均与本人无关
+        API接口均需要使用者自行解决，本人不提供任何API接口服务
+        不得在中国大陆地区使用本代码
+    -->
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+        .url-item {
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+        }
+        .copy-button {
+            margin-right: 10px;
+            background-color: #12ca49; /* Bootstrap info color */
+            border-color: #12ca49; /* Bootstrap info color */
+        }
+        .copy-button:hover {
+            background-color: #149e3e; /* Darker shade */
+            border-color: #149e3e; /* Darker shade */
+        }
+        .input-group-prepend {
+            margin-right: 10px;
+        }
+    </style>
+
+</head>
+<body>
+    <a href="https://github.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed" target="_blank" title="Visit GitHub Repository">
+        <img src="https://icons.iconarchive.com/icons/iconoir-team/iconoir/48/github-circle-icon.png" width="48" height="48">
+    </a>
+    <div class="container">
+        <h2>TGPH URL Transformer</h2>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <button class="btn btn-outline-secondary" type="button" id="pasteUrl">Paste URL</button>
+            </div>
+            <input type="text" class="form-control" id="inputUrl" placeholder="Input Raw URL">
+            <div class="input-group-append">
+                <button class="btn btn-primary" onclick="transformUrl()">Transform URL</button>
+            </div>
+        </div>
+        <div id="urlList"></div>
+    </div>
+
+    <script>
+        document.getElementById('pasteUrl').addEventListener('click', function() {
+            navigator.clipboard.readText().then(text => document.getElementById('inputUrl').value = text);
+        });
+
+        function transformUrl() {
+            const originalUrl = document.getElementById('inputUrl').value;
+            const fileName = originalUrl.match(/\/file\/(.+)$/)[1]; // 提取文件名
+
+            const prefixes = [
+                'https://telegraph.cachefly.net/file/',
+                'https://i0.wp.com/telegra.ph/file/',
+                'https://i1.wp.com/telegraph.cachefly.net/file/',
+                'https://i2.wp.com/im.gurl.eu.org/file/',
+                'https://i3.wp.com/missuo.ru/file/',
+                'https://i0.wp.com/image.zd8.top/file/',
+                'https://image.baidu.com/search/down?thumburl=https://baidu.com&url=https://i1.wp.com/missuo.ru/file/', 
+                // 对于image.baidu.com的加速接口 以前的接口只需要URL参数，20240426发现还需要thumburl这个参数，否则是空白的响应
+                'https://image.baidu.com/search/down?thumburl=https://baidu.com&url=https://i2.wp.com/image.zd8.top/file/',
+                'https://images.weserv.nl/?url=https://missuo.ru/file/',
+                'https://pic1.xuehuaimg.com/proxy/https://i0.wp.com/missuo.ru/file/',
+                'https://im.gurl.eu.org/file/',
+                'https://img1.131213.xyz/file/',
+                'https://img.111588.xyz/file/',
+                'https://image.zd8.top/file/',
+                'https://missuo.ru/file/'
+            ];
+
+            let transformedUrls = prefixes.map(prefix => `${prefix}${fileName}`);
+            displayUrls(transformedUrls);
+        }
+
+        function displayUrls(urls) {
+            const urlList = document.getElementById('urlList');
+            urlList.innerHTML = ''; // 清空之前的结果
+            urls.forEach(url => {
+                const urlItem = document.createElement('div');
+                urlItem.className = 'url-item';
+
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'btn btn-info copy-button';
+                copyBtn.textContent = 'COPY URL';
+                copyBtn.onclick = function() { navigator.clipboard.writeText(url); };
+
+                const urlText = document.createElement('span');
+                urlText.textContent = url;
+
+                urlItem.appendChild(copyBtn);
+                urlItem.appendChild(urlText);
+
+                urlList.appendChild(urlItem);
+            });
+        }
+    </script>
+</body>
+</html>
