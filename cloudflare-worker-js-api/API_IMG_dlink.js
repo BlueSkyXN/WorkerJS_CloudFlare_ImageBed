@@ -25,24 +25,56 @@ async function handleDlinkRequest(request) {
 
     console.log(`File received: ${imageFile.name}, size: ${imageFile.size}, type: ${imageFile.type}`);
 
-    // 使用上传的文件名
-    const fileName = imageFile.name;
+    // 智能后缀处理
+    let fileName = imageFile.name;
+    const nameParts = fileName.split('.');
+    const ext = nameParts.length > 1 ? nameParts.pop().toLowerCase() : '';
+    const baseName = nameParts.join('.');
+
+    // 已知支持的格式（不修改）
+    const supportedFormats = ['jpg', 'jpeg', 'png', 'webp', 'mp4'];
+
+    // 已知不支持的格式 -> 替换为 png
+    const unsupportedFormats = ['heic', 'avif', 'heif'];
+
+    if (unsupportedFormats.includes(ext)) {
+      // 明确不支持的格式，替换为 png
+      fileName = `${baseName}.png`;
+      console.log(`Format ${ext} not supported, renamed to: ${fileName}`);
+    }
+    // 已知支持的格式和其他未知格式，保持不变（由 403 重试机制处理）
 
     // 读取文件数据
     const imageData = await imageFile.arrayBuffer();
 
-    // 目标上传 URL
-    const uploadUrl = `https://www.dlink666.com/api/upload?name=${encodeURIComponent(fileName)}`;
+    // 上传函数（支持重试）
+    const uploadToServer = async (name) => {
+      const uploadUrl = `https://www.dlink666.com/api/upload?name=${encodeURIComponent(name)}`;
+      return await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+        },
+        body: imageData,
+      });
+    };
 
-    // 发送 PUT 请求到 DLink 上传接口
-    const response = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
-      },
-      body: imageData,
-    });
+    // 首次上传尝试
+    let response = await uploadToServer(fileName);
+
+    // 如果返回 403，自动更换后缀重试
+    if (response.status === 403) {
+      console.log(`Upload with ${fileName} got 403, retrying with fallback extension...`);
+
+      // 判断文件类型，选择回退后缀
+      const isImageType = imageFile.type && imageFile.type.startsWith('image/');
+      const fallbackExt = isImageType ? 'png' : 'mp4';
+      const fallbackName = `${baseName}.${fallbackExt}`;
+
+      console.log(`Retrying with: ${fallbackName}`);
+      response = await uploadToServer(fallbackName);
+    }
 
     // 处理响应
     if (response.ok) {
