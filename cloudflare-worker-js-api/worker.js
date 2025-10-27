@@ -47,9 +47,6 @@ async function handleRequest(request) {
     case '/upload/aliex':
       response = await  handleAliExpressRequest(request);
       break;
-    case '/upload/ucloud':
-      response = await  handleUCloudRequest(request);
-      break;
     case '/upload/3001':
       response = await  handle3001Request(request);
       break;
@@ -58,6 +55,9 @@ async function handleRequest(request) {
       break;
     case '/upload/imgbb':
       response = await  handleImgbbRequest(request);
+      break;
+    case '/upload/dlink':
+      response = await  handleDlinkRequest(request);
       break;
     default:
       response = new Response('Not Found', { status: 404 });
@@ -329,102 +329,6 @@ async function handleRequest(request) {
     }
   }
 
-  async function handleUCloudRequest(request) {
-  console.log('Request received for UCloud upload:', request.url);
-
-  if (request.method !== 'POST') {
-      return new Response('Method Not Allowed', { status: 405 });
-  }
-
-  try {
-      // 解析请求中的表单数据
-      const formData = await request.formData();
-      const file = formData.get('image'); // 前端上传的字段名为 'image'
-
-      if (!file) {
-          return new Response('No file uploaded', { status: 400 });
-      }
-
-      // 生成 UUID 随机文件名，保留原始扩展名
-      const originalFilename = file.name;
-      const extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
-      const newFilename = `${crypto.randomUUID()}${extension}`;
-
-      // 创建新的 FormData，用于发送到 UCloud 接口
-      const newFormData = new FormData();
-      newFormData.append('file', file, newFilename); // UCloud 接口要求字段名为 'file'
-
-      // 设置 UCloud 接口所需的头部信息
-      const targetHeaders = {
-          'Accept': 'application/json',
-          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7',
-          'Authorization': 'UCloud TOKEN_12134567890', // 替换为你的实际令牌
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
-          'Priority': 'u=1, i',
-          'Sec-CH-UA': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-          'Sec-CH-UA-Mobile': '?0',
-          'Sec-CH-UA-Platform': '"Windows"',
-          'Sec-Fetch-Dest': 'empty',
-          'Sec-Fetch-Mode': 'cors',
-          'Sec-Fetch-Site': 'none',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-          'X-Requested-With': 'XMLHttpRequest',
-      };
-
-      // UCloud 上传接口的 URL
-      const targetUrl = 'https://spt.ucloud.cn/im/client/upload';
-
-      // 发送请求到 UCloud 上传接口
-      const response = await fetch(targetUrl, {
-          method: 'POST',
-          headers: targetHeaders,
-          body: newFormData
-      });
-
-      if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`Upload failed: Status ${response.status}, Body: ${errorText}`);
-          return new Response(`Upload failed: ${errorText}`, { status: response.status });
-      }
-
-      // 解析 UCloud 接口的响应
-      const responseData = await response.json();
-      console.log('Response from UCloud API:', responseData);
-
-      // 检查 RetCode
-      if (responseData.RetCode !== 1) {
-          const message = responseData.Message || '未知错误';
-          console.error(`Upload failed, RetCode: ${responseData.RetCode}, Message: ${message}`);
-          return new Response(`Upload failed, RetCode: ${responseData.RetCode}, Message: ${message}`, { status: 500 });
-      }
-
-      // 从响应中提取文件名
-      const filesList = responseData.Files;
-      if (!filesList || filesList.length === 0) {
-          console.error('No files returned in response:', responseData);
-          return new Response('Upload succeeded but no files returned', { status: 500 });
-      }
-
-      const uploadedFilename = filesList[0];
-      const encodedFilename = encodeURIComponent(uploadedFilename);
-
-      // 构建完整的文件 URL
-      const fileUrl = `https://uchat.cn-bj.ufileos.com/${encodedFilename}`;
-
-      // 成功，返回图片 URL
-      return new Response(fileUrl, {
-          status: 200,
-          headers: {
-              'Content-Type': 'text/plain',
-              'Access-Control-Allow-Origin': '*' // 根据需要调整 CORS 策略
-          }
-      });
-  } catch (error) {
-      console.error('Error in handleUCloudRequest:', error);
-      return new Response('Internal Server Error', { status: 500 });
-  }
-  }
 
   async function handle3001Request(request) {
     // 定义 CORS 头部
@@ -986,4 +890,66 @@ async function handleImgbbRequest(request) {
         console.error('Error in handleImgbbRequest:', error);
         return new Response(`Internal server error: ${error.message}`, { status: 500 });
     }
+}
+
+// DLink 图床 API 接口
+async function handleDlinkRequest(request) {
+  // 确认请求方法为 POST 并且内容类型正确
+  if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
+    return new Response('Invalid request', { status: 400 });
+  }
+
+  try {
+    // 解析表单数据
+    const formData = await request.formData();
+    const imageFile = formData.get('image');
+
+    if (!imageFile) {
+      return new Response('No file uploaded', { status: 400 });
+    }
+
+    console.log(`File received: ${imageFile.name}, size: ${imageFile.size}, type: ${imageFile.type}`);
+
+    // 使用上传的文件名
+    const fileName = imageFile.name;
+
+    // 读取文件数据
+    const imageData = await imageFile.arrayBuffer();
+
+    // 目标上传 URL
+    const uploadUrl = `https://www.dlink666.com/api/upload?name=${encodeURIComponent(fileName)}`;
+
+    // 发送 PUT 请求到 DLink 上传接口
+    const response = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+      },
+      body: imageData,
+    });
+
+    // 处理响应
+    if (response.ok) {
+      const imageUrl = await response.text();
+      console.log(`Upload successful: ${imageUrl}`);
+
+      // 返回纯文本格式的图片 URL
+      return new Response(imageUrl, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/plain',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    } else {
+      const errorText = await response.text();
+      console.error(`Upload failed: ${response.status}, ${errorText}`);
+      return new Response(`Upload failed: ${response.status}`, { status: response.status });
+    }
+
+  } catch (error) {
+    console.error('Error in handleDlinkRequest:', error);
+    return new Response(`Internal server error: ${error.message}`, { status: 500 });
+  }
 }
