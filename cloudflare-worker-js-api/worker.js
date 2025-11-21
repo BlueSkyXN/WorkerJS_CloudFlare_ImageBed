@@ -250,8 +250,8 @@ async function handleAliExpressRequest(request) {
     }
 
     if (!cookie) {
-      console.error('Missing required cookie in KV storage or Header');
-      return new Response('Missing required cookie in KV storage or Header', {
+      console.error('Missing Secret: AliExpress Cookie (KV: ali_express_cookie or Header: X-EXTRA-SECRET)');
+      return new Response('Missing Secret: AliExpress Cookie (KV: ali_express_cookie or Header: X-EXTRA-SECRET)', {
         status: 500,
         headers: {
           'Content-Type': 'text/plain',
@@ -397,8 +397,8 @@ async function handle3001Request(request) {
       }
 
       if (!authorizationToken) {
-        console.error('Missing Authorization Token in KV storage or Header');
-        return new Response('Missing Authorization Token in KV storage or Header', {
+        console.error('Missing Secret: 3001 Token (KV: 3001_auth or Header: X-EXTRA-SECRET)');
+        return new Response('Missing Secret: 3001 Token (KV: 3001_auth or Header: X-EXTRA-SECRET)', {
           status: 500,
           headers: {
             'Content-Type': 'text/plain;charset=UTF-8',
@@ -574,7 +574,7 @@ async function handles3filebaseRequest(request) {
         hasSecretKey: !!config?.secretKey,
         hasBucket: !!config?.bucket
       });
-      throw new Error('Invalid S3 configuration');
+      return new Response('Missing Secret: S3 Config (KV: s3filebase_config or Header: X-EXTRA-SECRET)', { status: 500 });
     }
     console.log('[S3-Filebase] Configuration validated successfully');
 
@@ -1036,8 +1036,8 @@ async function handleNodeseekRequest(request) {
     }
 
     if (!apiKey) {
-      console.error('Missing NodeSeek API Key in KV storage or Header');
-      return new Response('Server Configuration Error: Missing API Key', { status: 500 });
+      console.error('Missing Secret: NodeSeek API Key (KV: NODESEEK_APIKEY or Header: X-EXTRA-SECRET)');
+      return new Response('Missing Secret: NodeSeek API Key (KV: NODESEEK_APIKEY or Header: X-EXTRA-SECRET)', { status: 500 });
     }
 
     // 解析表单数据

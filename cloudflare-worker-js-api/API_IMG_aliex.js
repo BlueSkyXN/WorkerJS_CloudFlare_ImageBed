@@ -44,8 +44,8 @@ async function handleAliExpressRequest(request) {
       cookie = await WORKER_IMGBED.get('ali_express_cookie');
     }
     if (!cookie) {
-      console.error('Missing required cookie in KV storage');
-      return new Response('Missing required cookie in KV storage', {
+      console.error('Missing Secret: AliExpress Cookie (KV: ali_express_cookie or Header: X-EXTRA-SECRET)');
+      return new Response('Missing Secret: AliExpress Cookie (KV: ali_express_cookie or Header: X-EXTRA-SECRET)', {
         status: 500,
         headers: {
           'Content-Type': 'text/plain',

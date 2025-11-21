@@ -77,9 +77,9 @@
             <div class="form-group">
                 <label for="channelSecret">Channel Secret (Optional) <a
                         href="https://github.com/BlueSkyXN/WorkerJS_CloudFlare_ImageBed/blob/main/docs/WorkerAPI-STD.md#额外配置-channel-secret"
-                        target="_blank">Need Help?</a></label>
+                        target="_blank">说明</a></label>
                 <input type="text" class="form-control" id="channelSecret"
-                    placeholder="Enter Extra Secret for NodeSeek/3001/S3 etc.">
+                    placeholder="仅 NodeSeek / 3001 / S3 / AliEx 可用此独立机密配置">
             </div>
             <div class="form-group">
                 <label for="fileInput">Select Files</label>
@@ -90,13 +90,14 @@
                 <select class="form-control" id="apiSelect">
                     <option value="58img">58img-定期删图</option>
                     <option value="dlink">DLink-OSS</option>
-                    <option value="tgphimg">TGPH-Debug通道-短时间删图</option>
                     <option value="imgbb">ImgBB-免费图床</option>
+                    <option value="nodeseek">NodeSeek图床-CloudFlare</option>
+                    <option value="tgphimg">TGPH-Debug通道-短时间删图</option>
                     <option value="ipfs">IPFS-去中心化多网关兼容</option>
                     <option value="s3ipfs">Filebase-IPFS</option>
                     <option value="3001">3001-Freebuf-国内CDN</option>
                     <option value="aliex">AliEx-国内CDN国外Akamai</option>
-                    <option value="nodeseek">NodeSeek图床-CloudFlare</option>
+
                 </select>
             </div>
             <div class="form-check mb-2">

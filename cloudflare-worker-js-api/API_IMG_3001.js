@@ -68,16 +68,16 @@ async function handle3001Request(request) {
       let authorizationToken = request.headers.get('X-EXTRA-SECRET');
       if (!authorizationToken) {
         authorizationToken = await WORKER_IMGBED.get('3001_auth');
-      }
-      if (!authorizationToken) {
-        console.error('Missing Authorization Token in KV storage')
-        return new Response('Missing Authorization Token in KV storage', {
-          status: 500,
-          headers: {
-            'Content-Type': 'text/plain;charset=UTF-8',
-            ...corsHeaders,
-          },
-        })
+        if (!authorizationToken) {
+          console.error('Missing Secret: 3001 Token (KV: 3001_auth or Header: X-EXTRA-SECRET)')
+          return new Response('Missing Secret: 3001 Token (KV: 3001_auth or Header: X-EXTRA-SECRET)', {
+            status: 500,
+            headers: {
+              'Content-Type': 'text/plain;charset=UTF-8',
+              ...corsHeaders,
+            },
+          })
+        }
       }
 
       // 构建上传表单数据，将 'image' 重命名为 'file'

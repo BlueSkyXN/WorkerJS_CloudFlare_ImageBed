@@ -19,8 +19,8 @@ async function handleNodeseekRequest(request) {
             apiKey = await WORKER_IMGBED.get('NODESEEK_APIKEY');
         }
         if (!apiKey) {
-            console.error('Missing NodeSeek API Key in KV storage');
-            return new Response('Server Configuration Error: Missing API Key', { status: 500 });
+            console.error('Missing Secret: NodeSeek API Key (KV: NODESEEK_APIKEY or Header: X-EXTRA-SECRET)');
+            return new Response('Missing Secret: NodeSeek API Key (KV: NODESEEK_APIKEY or Header: X-EXTRA-SECRET)', { status: 500 });
         }
 
         // 解析表单数据

@@ -45,7 +45,7 @@ async function handles3filebaseRequest(request) {
                 hasSecretKey: !!config?.secretKey,
                 hasBucket: !!config?.bucket
             });
-            throw new Error('Invalid S3 configuration');
+            return new Response('Missing Secret: S3 Config (KV: s3filebase_config or Header: X-EXTRA-SECRET)', { status: 500 });
         }
         console.log('[S3-Filebase] Configuration loaded successfully');
 
