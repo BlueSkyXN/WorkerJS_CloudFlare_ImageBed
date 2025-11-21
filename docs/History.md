@@ -22,4 +22,4 @@
 - 20250120 新增Filebase提供的IPFS-S3接口对接，官网直接免费注册即可，20250120时每个账号支持1000文件数&5GB空间的限制
 - 20250709 新增imgbb图床
 - 20251015 新增dlink图床 https://www.nodeseek.com/post-486422-1；淘汰了Ucloud图床
-- 20251121 新增 NodeSeek 图床对接；新增 `X-EXTRA-SECRET` Header 支持，允许通过请求头动态传入 API Key/Token/Config，覆盖 KV 配置；前端新增 Channel Secret 输入框并支持本地持久化存储。
+- 20251121 新增 NodeSeek 图床对接；新增 `X-EXTRA-SECRET` Header 支持，允许通过请求头动态传入 API Key/Token/Config，覆盖 KV 配置；前端新增 Channel Secret 输入框并支持本地持久化存储；**全面优化错误处理机制**：所有图床接口在失败时返回完整的上游响应体（JSON/HTML/Text），便于调试；修正 KV 键名规范（`3001_TOKEN`、`S3_FILEBASE_CONFIG`、`ALIEXPRESS_COOKIE`）；改进 NodeSeek API 响应解析（使用 `links.direct` 字段）；增强 TGPH 接口稳定性（支持数组和对象格式）。

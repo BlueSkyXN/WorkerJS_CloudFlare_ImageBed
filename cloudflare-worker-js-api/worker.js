@@ -1105,9 +1105,10 @@ async function handleNodeseekRequest(request) {
     }
 
     if (response.ok) {
-      // 尝试多种可能的字段获取 URL (根据常见的图床 API 结构)
-      // NodeImage (Chevereto based?) 通常是 data.url 或 image.url
-      const imageUrl = result.data?.url || result.url || result.image?.url;
+      // NodeSeek API 实际响应格式:
+      // {"success": true, "message": "...", "links": {"direct": "URL", "markdown": "...", "bbcode": "..."}}
+      // 图片URL在 links.direct 字段中
+      const imageUrl = result.links?.direct || result.url || result.data?.url || result.image?.url;
 
       if (imageUrl) {
         return new Response(imageUrl, {
