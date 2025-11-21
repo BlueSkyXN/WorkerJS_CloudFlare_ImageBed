@@ -21,3 +21,5 @@
 - 20241118 新增3001对接，需要自备账号cookie，参考旧的3001imgjs，移除了jdkf、vviptuangou、da8m、mtdp等几个不可用的/防盗链的前端接口
 - 20250120 新增Filebase提供的IPFS-S3接口对接，官网直接免费注册即可，20250120时每个账号支持1000文件数&5GB空间的限制
 - 20250709 新增imgbb图床
+- 20251015 新增dlink图床 https://www.nodeseek.com/post-486422-1；淘汰了Ucloud图床
+- 20251121 新增 NodeSeek 图床对接；新增 `X-EXTRA-SECRET` Header 支持，允许通过请求头动态传入 API Key/Token/Config，覆盖 KV 配置；前端新增 Channel Secret 输入框并支持本地持久化存储。

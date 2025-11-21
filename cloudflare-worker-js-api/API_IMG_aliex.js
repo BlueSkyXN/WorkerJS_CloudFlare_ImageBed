@@ -38,7 +38,11 @@ async function handleAliExpressRequest(request) {
     }
 
     // 从 KV 中获取 Cookie
-    const cookie = await WORKER_IMGBED.get('ali_express_cookie');
+    // 优先从 Header 获取 (统一使用 X-EXTRA-SECRET)，否则从 KV 获取
+    let cookie = request.headers.get('X-EXTRA-SECRET');
+    if (!cookie) {
+      cookie = await WORKER_IMGBED.get('ali_express_cookie');
+    }
     if (!cookie) {
       console.error('Missing required cookie in KV storage');
       return new Response('Missing required cookie in KV storage', {

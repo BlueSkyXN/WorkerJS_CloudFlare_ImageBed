@@ -59,3 +59,46 @@ curl -X POST \
 # 响应示例
 https://telegra.ph/file/1234567890abcdef.jpg
 ```
+
+## 额外配置 (Channel Secret)
+
+部分图床接口（如 NodeSeek, Freebuf, S3, AliExpress）需要额外的 API Key 或配置。你可以选择在 Cloudflare KV 中配置，也可以通过 HTTP Header `X-EXTRA-SECRET` 动态传入。
+
+### 优先级
+**Header (`X-EXTRA-SECRET`) > KV 配置**
+
+### 使用方式
+
+#### 1. NodeSeek 图床
+- **Header**: `X-EXTRA-SECRET`
+- **值**: 你的 NodeSeek API Key (字符串)
+- **KV 键名**: `NODESEEK_APIKEY`
+
+#### 2. Freebuf (3001) 图床
+- **Header**: `X-EXTRA-SECRET`
+- **值**: 你的 Freebuf Bearer Token (字符串)
+- **KV 键名**: `3001_auth`
+
+#### 3. S3 / Filebase 图床
+- **Header**: `X-EXTRA-SECRET`
+- **值**: JSON 配置字符串
+  ```json
+  {"accessKey":"你的AK","secretKey":"你的SK","bucket":"存储桶名"}
+  ```
+- **KV 键名**: `s3filebase_config`
+
+#### 4. AliExpress (速卖通) 图床
+- **Header**: `X-EXTRA-SECRET`
+- **值**: 完整的 Cookie 字符串
+- **KV 键名**: `ali_express_cookie`
+
+### 示例 (cURL)
+
+```bash
+# 使用 Header 覆盖配置上传到 NodeSeek
+curl -X POST \
+  -H "Authorization: Bearer your_api_password" \
+  -H "X-EXTRA-SECRET: your_nodeseek_api_key" \
+  -F "image=@/path/to/image.jpg" \
+  https://your-worker.workers.dev/upload/nodeseek
+```

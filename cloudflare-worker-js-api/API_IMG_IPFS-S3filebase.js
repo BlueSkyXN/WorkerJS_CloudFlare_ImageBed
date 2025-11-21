@@ -8,217 +8,234 @@
 */
 
 async function handles3filebaseRequest(request) {
-  console.log('[S3-Filebase] Starting request handling');
-  
-  if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
-      console.error('[S3-Filebase] Invalid request method or content type:', {
-          method: request.method,
-          contentType: request.headers.get('Content-Type')
-      });
-      return new Response('Invalid request', { status: 400 });
-  }
+    console.log('[S3-Filebase] Starting request handling');
 
-  try {
-      console.log('[S3-Filebase] Fetching configuration from KV store');
-      const config = await WORKER_IMGBED.get('s3filebase_config', 'json');
-      if (!config || !config.accessKey || !config.secretKey || !config.bucket) {
-          console.error('[S3-Filebase] Invalid configuration:', {
-              hasConfig: !!config,
-              hasAccessKey: !!config?.accessKey,
-              hasSecretKey: !!config?.secretKey,
-              hasBucket: !!config?.bucket
-          });
-          throw new Error('Invalid S3 configuration');
-      }
-      console.log('[S3-Filebase] Configuration loaded successfully');
+    if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
+        console.error('[S3-Filebase] Invalid request method or content type:', {
+            method: request.method,
+            contentType: request.headers.get('Content-Type')
+        });
+        return new Response('Invalid request', { status: 400 });
+    }
 
-      const formData = await request.formData();
-      const file = formData.get('image');
-      if (!file) {
-          console.error('[S3-Filebase] No file found in form data');
-          return new Response('No file found', { status: 400 });
-      }
+    try {
+        console.log('[S3-Filebase] Fetching configuration');
 
-      // 获取安全的文件名
-      const originalName = file.name;
-      const extension = originalName.split('.').pop() || '';
-      const timestamp = new Date().toISOString()
-          .replace(/[-:]/g, '')
-          .split('.')[0]
-          .replace('T', '_');
-      
-      // 生成安全的文件名：使用时间戳和随机字符串，避免中文和特殊字符
-      const safeFileName = `${timestamp}_${Math.random().toString(36).substring(2, 15)}.${extension}`;
-      console.log('[S3-Filebase] File details:', {
-          originalName,
-          safeFileName,
-          type: file.type,
-          size: file.size
-      });
+        // 优先尝试从 Header 获取配置 (JSON 字符串，统一使用 X-EXTRA-SECRET)
+        let config;
+        const headerConfig = request.headers.get('X-EXTRA-SECRET');
+        if (headerConfig) {
+            try {
+                config = JSON.parse(headerConfig);
+                console.log('[S3-Filebase] Configuration loaded from Header');
+            } catch (e) {
+                console.error('[S3-Filebase] Invalid JSON in X-EXTRA-SECRET header');
+            }
+        }
 
-      const content = await file.arrayBuffer();
-      console.log('[S3-Filebase] File content loaded:', {
-          contentSize: content.byteLength
-      });
+        // 如果 Header 没有或无效，从 KV 获取
+        if (!config) {
+            config = await WORKER_IMGBED.get('s3filebase_config', 'json');
+            console.log('[S3-Filebase] Configuration loaded from KV');
+        }
+        if (!config || !config.accessKey || !config.secretKey || !config.bucket) {
+            console.error('[S3-Filebase] Invalid configuration:', {
+                hasConfig: !!config,
+                hasAccessKey: !!config?.accessKey,
+                hasSecretKey: !!config?.secretKey,
+                hasBucket: !!config?.bucket
+            });
+            throw new Error('Invalid S3 configuration');
+        }
+        console.log('[S3-Filebase] Configuration loaded successfully');
 
-      // AWS 签名所需的时间戳
-      const now = new Date();
-      const amzdate = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
-      const dateStamp = amzdate.slice(0, 8);
-      
-      // 计算内容哈希
-      const contentHash = await crypto.subtle.digest('SHA-256', content)
-          .then(buf => Array.from(new Uint8Array(buf))
-              .map(b => b.toString(16).padStart(2, '0'))
-              .join(''));
-      
-      // URI 编码的路径
-      const encodedKey = encodeURIComponent(safeFileName).replace(/%20/g, '+');
-      const canonicalUri = `/${config.bucket}/${encodedKey}`;
-      
-      // 准备签名所需的头部
-      const uploadHeaders = {
-          'Host': 's3.filebase.com',
-          'Content-Type': file.type || 'application/octet-stream',
-          'X-Amz-Content-SHA256': contentHash,
-          'X-Amz-Date': amzdate
-      };
-      
-      console.log('[S3-Filebase] Request preparation:', {
-          canonicalUri,
-          amzdate,
-          contentHashPrefix: contentHash.substring(0, 16) + '...'
-      });
+        const formData = await request.formData();
+        const file = formData.get('image');
+        if (!file) {
+            console.error('[S3-Filebase] No file found in form data');
+            return new Response('No file found', { status: 400 });
+        }
 
-      const algorithm = 'AWS4-HMAC-SHA256';
-      const region = 'us-east-1';
-      const service = 's3';
-      const scope = `${dateStamp}/${region}/${service}/aws4_request`;
-      
-      // 准备规范请求
-      const canonicalHeaders = Object.entries(uploadHeaders)
-          .map(([k, v]) => `${k.toLowerCase()}:${v}\n`)
-          .sort()
-          .join('');
-      const signedHeaders = Object.keys(uploadHeaders)
-          .map(k => k.toLowerCase())
-          .sort()
-          .join(';');
+        // 获取安全的文件名
+        const originalName = file.name;
+        const extension = originalName.split('.').pop() || '';
+        const timestamp = new Date().toISOString()
+            .replace(/[-:]/g, '')
+            .split('.')[0]
+            .replace('T', '_');
 
-      const canonicalRequest = [
-          'PUT',
-          canonicalUri,
-          '',
-          canonicalHeaders,
-          signedHeaders,
-          contentHash
-      ].join('\n');
+        // 生成安全的文件名：使用时间戳和随机字符串，避免中文和特殊字符
+        const safeFileName = `${timestamp}_${Math.random().toString(36).substring(2, 15)}.${extension}`;
+        console.log('[S3-Filebase] File details:', {
+            originalName,
+            safeFileName,
+            type: file.type,
+            size: file.size
+        });
 
-      console.log('[S3-Filebase] Canonical request prepared:', {
-          method: 'PUT',
-          uri: canonicalUri,
-          signedHeaders
-      });
+        const content = await file.arrayBuffer();
+        console.log('[S3-Filebase] File content loaded:', {
+            contentSize: content.byteLength
+        });
 
-      const stringToSign = [
-          algorithm,
-          amzdate,
-          scope,
-          await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonicalRequest))
-              .then(buf => Array.from(new Uint8Array(buf))
-                  .map(b => b.toString(16).padStart(2, '0'))
-                  .join(''))
-      ].join('\n');
+        // AWS 签名所需的时间戳
+        const now = new Date();
+        const amzdate = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
+        const dateStamp = amzdate.slice(0, 8);
 
-      // 生成签名密钥
-      let key = await crypto.subtle.importKey(
-          'raw',
-          new TextEncoder().encode(`AWS4${config.secretKey}`),
-          { name: 'HMAC', hash: 'SHA-256' },
-          false,
-          ['sign']
-      );
+        // 计算内容哈希
+        const contentHash = await crypto.subtle.digest('SHA-256', content)
+            .then(buf => Array.from(new Uint8Array(buf))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join(''));
 
-      for (const msg of [dateStamp, region, service, 'aws4_request']) {
-          key = await crypto.subtle.importKey(
-              'raw',
-              await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(msg)),
-              { name: 'HMAC', hash: 'SHA-256' },
-              false,
-              ['sign']
-          );
-      }
+        // URI 编码的路径
+        const encodedKey = encodeURIComponent(safeFileName).replace(/%20/g, '+');
+        const canonicalUri = `/${config.bucket}/${encodedKey}`;
 
-      // 计算最终签名
-      const signature = await crypto.subtle.sign(
-          'HMAC',
-          key,
-          new TextEncoder().encode(stringToSign)
-      );
+        // 准备签名所需的头部
+        const uploadHeaders = {
+            'Host': 's3.filebase.com',
+            'Content-Type': file.type || 'application/octet-stream',
+            'X-Amz-Content-SHA256': contentHash,
+            'X-Amz-Date': amzdate
+        };
 
-      // 构建授权头
-      const credential = `${config.accessKey}/${dateStamp}/${region}/${service}/aws4_request`;
-      const authorization = [
-          `${algorithm} Credential=${credential}`,
-          `SignedHeaders=${signedHeaders}`,
-          `Signature=${Array.from(new Uint8Array(signature))
-              .map(b => b.toString(16).padStart(2, '0'))
-              .join('')}`
-      ].join(', ');
+        console.log('[S3-Filebase] Request preparation:', {
+            canonicalUri,
+            amzdate,
+            contentHashPrefix: contentHash.substring(0, 16) + '...'
+        });
 
-      console.log('[S3-Filebase] Authorization prepared:', {
-          credentialPrefix: credential.split('/')[0] + '/...',
-          signedHeadersCount: signedHeaders.split(';').length
-      });
+        const algorithm = 'AWS4-HMAC-SHA256';
+        const region = 'us-east-1';
+        const service = 's3';
+        const scope = `${dateStamp}/${region}/${service}/aws4_request`;
 
-      // 发送上传请求
-      const uploadUrl = `https://s3.filebase.com${canonicalUri}`;
-      console.log('[S3-Filebase] Sending upload request to:', uploadUrl);
-      
-      const uploadResponse = await fetch(uploadUrl, {
-          method: 'PUT',
-          headers: {
-              ...uploadHeaders,
-              'Authorization': authorization
-          },
-          body: content
-      });
+        // 准备规范请求
+        const canonicalHeaders = Object.entries(uploadHeaders)
+            .map(([k, v]) => `${k.toLowerCase()}:${v}\n`)
+            .sort()
+            .join('');
+        const signedHeaders = Object.keys(uploadHeaders)
+            .map(k => k.toLowerCase())
+            .sort()
+            .join(';');
 
-      if (!uploadResponse.ok) {
-          const errorBody = await uploadResponse.text();
-          console.error('[S3-Filebase] Upload failed:', {
-              status: uploadResponse.status,
-              statusText: uploadResponse.statusText,
-              responseBody: errorBody,
-              headers: Object.fromEntries([...uploadResponse.headers])
-          });
-          throw new Error(`Upload failed with status ${uploadResponse.status}: ${errorBody}`);
-      }
+        const canonicalRequest = [
+            'PUT',
+            canonicalUri,
+            '',
+            canonicalHeaders,
+            signedHeaders,
+            contentHash
+        ].join('\n');
 
-      console.log('[S3-Filebase] Upload successful');
-      const cid = uploadResponse.headers.get('x-amz-meta-cid');
-      if (!cid) {
-          console.error('[S3-Filebase] CID not found in response headers:', 
-              Object.fromEntries([...uploadResponse.headers]));
-          throw new Error('CID not found in response');
-      }
+        console.log('[S3-Filebase] Canonical request prepared:', {
+            method: 'PUT',
+            uri: canonicalUri,
+            signedHeaders
+        });
 
-      const finalUrl = `https://ipfs.io/ipfs/${cid}`;
-      console.log('[S3-Filebase] Generated final URL:', finalUrl);
-      return new Response(finalUrl);
+        const stringToSign = [
+            algorithm,
+            amzdate,
+            scope,
+            await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonicalRequest))
+                .then(buf => Array.from(new Uint8Array(buf))
+                    .map(b => b.toString(16).padStart(2, '0'))
+                    .join(''))
+        ].join('\n');
 
-  } catch (error) {
-      console.error('[S3-Filebase] Error in request handling:', {
-          name: error.name,
-          message: error.message,
-          stack: error.stack
-      });
-      return new Response(`Upload failed: ${error.message}`, { 
-          status: 500,
-          headers: {
-              'Content-Type': 'text/plain',
-              'X-Error-Details': error.message
-          }
-      });
-  }
+        // 生成签名密钥
+        let key = await crypto.subtle.importKey(
+            'raw',
+            new TextEncoder().encode(`AWS4${config.secretKey}`),
+            { name: 'HMAC', hash: 'SHA-256' },
+            false,
+            ['sign']
+        );
+
+        for (const msg of [dateStamp, region, service, 'aws4_request']) {
+            key = await crypto.subtle.importKey(
+                'raw',
+                await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(msg)),
+                { name: 'HMAC', hash: 'SHA-256' },
+                false,
+                ['sign']
+            );
+        }
+
+        // 计算最终签名
+        const signature = await crypto.subtle.sign(
+            'HMAC',
+            key,
+            new TextEncoder().encode(stringToSign)
+        );
+
+        // 构建授权头
+        const credential = `${config.accessKey}/${dateStamp}/${region}/${service}/aws4_request`;
+        const authorization = [
+            `${algorithm} Credential=${credential}`,
+            `SignedHeaders=${signedHeaders}`,
+            `Signature=${Array.from(new Uint8Array(signature))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('')}`
+        ].join(', ');
+
+        console.log('[S3-Filebase] Authorization prepared:', {
+            credentialPrefix: credential.split('/')[0] + '/...',
+            signedHeadersCount: signedHeaders.split(';').length
+        });
+
+        // 发送上传请求
+        const uploadUrl = `https://s3.filebase.com${canonicalUri}`;
+        console.log('[S3-Filebase] Sending upload request to:', uploadUrl);
+
+        const uploadResponse = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: {
+                ...uploadHeaders,
+                'Authorization': authorization
+            },
+            body: content
+        });
+
+        if (!uploadResponse.ok) {
+            const errorBody = await uploadResponse.text();
+            console.error('[S3-Filebase] Upload failed:', {
+                status: uploadResponse.status,
+                statusText: uploadResponse.statusText,
+                responseBody: errorBody,
+                headers: Object.fromEntries([...uploadResponse.headers])
+            });
+            throw new Error(`Upload failed with status ${uploadResponse.status}: ${errorBody}`);
+        }
+
+        console.log('[S3-Filebase] Upload successful');
+        const cid = uploadResponse.headers.get('x-amz-meta-cid');
+        if (!cid) {
+            console.error('[S3-Filebase] CID not found in response headers:',
+                Object.fromEntries([...uploadResponse.headers]));
+            throw new Error('CID not found in response');
+        }
+
+        const finalUrl = `https://ipfs.io/ipfs/${cid}`;
+        console.log('[S3-Filebase] Generated final URL:', finalUrl);
+        return new Response(finalUrl);
+
+    } catch (error) {
+        console.error('[S3-Filebase] Error in request handling:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
+        return new Response(`Upload failed: ${error.message}`, {
+            status: 500,
+            headers: {
+                'Content-Type': 'text/plain',
+                'X-Error-Details': error.message
+            }
+        });
+    }
 }
