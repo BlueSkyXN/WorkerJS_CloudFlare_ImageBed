@@ -77,10 +77,10 @@ async function handleAliExpressRequest(request) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Upload failed: Status ${response.status}, Body: ${errorText}`);
-      return new Response(`Upload failed: HTTP error! Status: ${response.status}`, {
-        status: 500,
+      return new Response(errorText, {
+        status: response.status, // 保持原始状态码
         headers: {
-          'Content-Type': 'text/plain',
+          'Content-Type': 'text/plain;charset=UTF-8', // 保持原始格式或设为 text/plain
           'Access-Control-Allow-Origin': '*',
         },
       });

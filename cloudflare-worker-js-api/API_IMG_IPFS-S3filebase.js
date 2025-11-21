@@ -211,15 +211,21 @@ async function handles3filebaseRequest(request) {
                 responseBody: errorBody,
                 headers: Object.fromEntries([...uploadResponse.headers])
             });
-            throw new Error(`Upload failed with status ${uploadResponse.status}: ${errorBody}`);
+            return new Response(errorBody, {
+                status: uploadResponse.status,
+                headers: { 'Content-Type': 'text/plain;charset=UTF-8' }
+            });
         }
 
         console.log('[S3-Filebase] Upload successful');
         const cid = uploadResponse.headers.get('x-amz-meta-cid');
         if (!cid) {
-            console.error('[S3-Filebase] CID not found in response headers:',
-                Object.fromEntries([...uploadResponse.headers]));
-            throw new Error('CID not found in response');
+            const headersObj = Object.fromEntries([...uploadResponse.headers]);
+            console.error('[S3-Filebase] CID not found in response headers:', headersObj);
+            return new Response(JSON.stringify({ error: 'CID not found in response', headers: headersObj }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json;charset=UTF-8' }
+            });
         }
 
         const finalUrl = `https://ipfs.io/ipfs/${cid}`;

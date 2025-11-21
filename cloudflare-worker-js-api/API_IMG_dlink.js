@@ -92,7 +92,7 @@ async function handleDlinkRequest(request) {
     } else {
       const errorText = await response.text();
       console.error(`Upload failed: ${response.status}, ${errorText}`);
-      return new Response(`Upload failed: ${response.status}`, { status: response.status });
+      return new Response(errorText, { status: response.status });
     }
 
   } catch (error) {

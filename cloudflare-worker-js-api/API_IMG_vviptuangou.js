@@ -77,6 +77,6 @@ async function handleVviptuangouRequest(request) {
     });
   } catch (error) {
     console.error('Error:', error);
-    return new Response('Internal Server Error', { status: 500 });
+    return new Response(error.message, { status: 500 });
   }
 }

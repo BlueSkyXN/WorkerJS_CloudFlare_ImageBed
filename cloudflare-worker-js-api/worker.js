@@ -169,52 +169,74 @@ async function handleimg2ipfsRequest(request) {
       });
     } else {
       console.error(`上传失败，状态码: ${response.status}`);
-      return new Response(`Upload failed with status: ${response.status}`, { status: response.status });
+      const errorBody = await response.text();
+      return new Response(errorBody, { status: response.status });
     }
   } catch (error) {
     console.error('Error:', error);
-    return new Response('Internal Server Error', { status: 500 });
+    return new Response(error.message, { status: 500 });
   }
 }
 
 
 async function handleTgphimgRequest(request) {
-  // 确认请求方法为 POST 并且内容类型正确
   if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
     return new Response('Invalid request', { status: 400 });
   }
 
-  // 解析表单数据
   const formData = await request.formData();
-  const imageFile = formData.get('image'); // 假设字段名为 'image'
-  if (!imageFile) return new Response('Image file not found', { status: 400 });
+  const imageFile = formData.get('image');
+  if (!imageFile) {
+    return new Response('Image file not found', { status: 400 });
+  }
 
-  // 修改字段名为 'file'，以适应 Telegra.ph 的接口
-  formData.append('file', imageFile);
-  formData.delete('image'); // 删除原来的 'image' 字段
+  formData.append('file', imageFile, imageFile.name || 'image');
+  formData.delete('image');
 
-  // Telegra.ph 的上传接口
   const targetUrl = 'https://telegra.ph/upload?source=bugtracker';
-
-  // 发送修改后的表单数据
   const response = await fetch(targetUrl, {
     method: 'POST',
     body: formData
   });
 
-  // 处理响应
-  if (response.ok) {
-    const result = await response.json();
-    if (result && result.src) {
-      // 提取 src 并拼接成完整的 URL
-      const imageUrl = `https://telegra.ph${result.src.replace(/\\/g, '')}`; // 处理反斜杠
-      return new Response(imageUrl);
-    } else {
-      return new Response('Error: Unexpected response format', { status: 500 });
-    }
-  } else {
+  if (!response.ok) {
     return new Response('Error: ' + await response.text(), { status: response.status });
   }
+
+  const rawBody = await response.text();
+  let result;
+  try {
+    result = JSON.parse(rawBody);
+  } catch (error) {
+    console.error('Failed to parse TGPH response:', rawBody);
+    return new Response(rawBody, {
+      status: 500,
+      headers: { 'Content-Type': 'application/json;charset=UTF-8' }
+    });
+  }
+
+  const src = Array.isArray(result)
+    ? result[0]?.src
+    : result?.src || result?.[0]?.src;
+
+  if (!src) {
+    console.error('TGPH upload succeeded but no src found:', result);
+    return new Response(JSON.stringify(result), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json;charset=UTF-8' }
+    });
+  }
+
+  const normalizedSrc = src.replace(/\\/g, '');
+  const imageUrl = `https://telegra.ph${normalizedSrc.startsWith('/') ? normalizedSrc : `/${normalizedSrc}`}`;
+
+  return new Response(imageUrl, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/plain',
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
 }
 
 
@@ -393,12 +415,12 @@ async function handle3001Request(request) {
       // 优先从 Header 获取 Token (统一使用 X-EXTRA-SECRET)，否则从 KV 获取
       let authorizationToken = request.headers.get('X-EXTRA-SECRET');
       if (!authorizationToken) {
-        authorizationToken = await WORKER_IMGBED.get('TOKEN_3001');
+        authorizationToken = await WORKER_IMGBED.get('3001_TOKEN');
       }
 
       if (!authorizationToken) {
-        console.error('Missing Secret: 3001 Token (KV: TOKEN_3001 or Header: X-EXTRA-SECRET)');
-        return new Response('Missing Secret: 3001 Token (KV: TOKEN_3001 or Header: X-EXTRA-SECRET)', {
+        console.error('Missing Secret: 3001 Token (KV: 3001_TOKEN or Header: X-EXTRA-SECRET)');
+        return new Response('Missing Secret: 3001 Token (KV: 3001_TOKEN or Header: X-EXTRA-SECRET)', {
           status: 500,
           headers: {
             'Content-Type': 'text/plain;charset=UTF-8',
@@ -738,15 +760,21 @@ async function handles3filebaseRequest(request) {
         responseBody: errorBody,
         headers: Object.fromEntries([...uploadResponse.headers])
       });
-      throw new Error(`Upload failed with status ${uploadResponse.status}: ${errorBody}`);
+      return new Response(errorBody, {
+        status: uploadResponse.status,
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' }
+      });
     }
 
     console.log('[S3-Filebase] Upload successful');
     const cid = uploadResponse.headers.get('x-amz-meta-cid');
     if (!cid) {
-      console.error('[S3-Filebase] CID not found in response headers:',
-        Object.fromEntries([...uploadResponse.headers]));
-      throw new Error('CID not found in response');
+      const headersObj = Object.fromEntries([...uploadResponse.headers]);
+      console.error('[S3-Filebase] CID not found in response headers:', headersObj);
+      return new Response(JSON.stringify({ error: 'CID not found in response', headers: headersObj }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' }
+      });
     }
 
     const finalUrl = `https://ipfs.io/ipfs/${cid}`;
@@ -800,12 +828,13 @@ async function handle58imgRequest(request) {
     });
 
     if (!getUrlResponse.ok) {
-      throw new Error(`Failed to get upload URL: ${getUrlResponse.status}`);
+      const errorBody = await getUrlResponse.text();
+      return new Response(errorBody, { status: getUrlResponse.status });
     }
 
     const urlData = await getUrlResponse.json();
     if (urlData.error_code !== 0 || !urlData.data?.upload_info?.[0]?.url) {
-      throw new Error('Invalid upload URL response');
+      return new Response(JSON.stringify(urlData), { status: 500 });
     }
 
     const uploadUrl = urlData.data.upload_info[0].url;
@@ -823,7 +852,8 @@ async function handle58imgRequest(request) {
     });
 
     if (!uploadResponse.ok) {
-      throw new Error(`Upload failed: ${uploadResponse.status}`);
+      const errorBody = await uploadResponse.text();
+      return new Response(errorBody, { status: uploadResponse.status });
     }
 
     // 第三步：生成最终URL
@@ -892,7 +922,8 @@ async function handleImgbbRequest(request) {
 
     if (!response.ok) {
       console.error(`ImgBB API error: ${response.status} ${response.statusText}`);
-      return new Response(`Upload failed: ${response.status}`, { status: response.status });
+      const errorBody = await response.text();
+      return new Response(errorBody, { status: response.status });
     }
 
     // 解析响应
@@ -914,7 +945,7 @@ async function handleImgbbRequest(request) {
       });
     } else {
       console.error('ImgBB upload failed:', result);
-      return new Response('Upload failed: Invalid response from ImgBB', { status: 500 });
+      return new Response(JSON.stringify(result), { status: 500 });
     }
 
   } catch (error) {
@@ -1008,7 +1039,7 @@ async function handleDlinkRequest(request) {
     } else {
       const errorText = await response.text();
       console.error(`Upload failed: ${response.status}, ${errorText}`);
-      return new Response(`Upload failed: ${response.status}`, { status: response.status });
+      return new Response(errorText, { status: response.status });
     }
 
   } catch (error) {
@@ -1085,11 +1116,17 @@ async function handleNodeseekRequest(request) {
         });
       } else {
         console.error('NodeSeek upload success but no URL found:', result);
-        return new Response('Upstream Error: No URL in response', { status: 502 });
+        return new Response(JSON.stringify(result), {
+          status: 502,
+          headers: { 'Content-Type': 'application/json;charset=UTF-8' }
+        });
       }
     } else {
       console.error('NodeSeek upload failed:', result);
-      return new Response(`Upstream Error: ${result.message || result.error || response.statusText}`, { status: response.status });
+      return new Response(JSON.stringify(result), {
+        status: response.status,
+        headers: { 'Content-Type': 'application/json;charset=UTF-8' }
+      });
     }
 
   } catch (error) {

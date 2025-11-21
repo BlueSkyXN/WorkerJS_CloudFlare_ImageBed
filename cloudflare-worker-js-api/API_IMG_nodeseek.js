@@ -68,11 +68,17 @@ async function handleNodeseekRequest(request) {
                 });
             } else {
                 console.error('NodeSeek upload success but no URL found:', result);
-                return new Response('Upstream Error: No URL in response', { status: 502 });
+                return new Response(JSON.stringify(result), {
+                    status: 502,
+                    headers: { 'Content-Type': 'application/json;charset=UTF-8' }
+                });
             }
         } else {
             console.error('NodeSeek upload failed:', result);
-            return new Response(`Upstream Error: ${result.message || result.error || response.statusText}`, { status: response.status });
+            return new Response(JSON.stringify(result), {
+                status: response.status,
+                headers: { 'Content-Type': 'application/json;charset=UTF-8' }
+            });
         }
 
     } catch (error) {

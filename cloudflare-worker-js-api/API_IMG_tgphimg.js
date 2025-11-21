@@ -18,7 +18,7 @@ async function handleTgphimgRequest(request) {
   if (!imageFile) return new Response('Image file not found', { status: 400 });
 
   // Telegra.ph 的上传接口
-  const targetUrl = 'https://telegra.ph/upload';
+  const targetUrl = 'https://telegra.ph/upload?source=bugtracker';
 
   // 为了与 Telegra.ph 接口兼容，我们保留表单数据的格式并直接转发
   const response = await fetch(targetUrl, {
@@ -27,16 +27,42 @@ async function handleTgphimgRequest(request) {
   });
 
   // 处理响应
-  if (response.ok) {
-    const result = await response.json();
-    if (result && result[0] && result[0].src) {
-      const imageUrl = `https://telegra.ph${result[0].src}`;
-      // 直接返回图片 URL 而不是 JSON 对象
-      return new Response(imageUrl);
-    } else {
-      return new Response('Error: Unexpected response format', { status: 500 });
-    }
-  } else {
+  if (!response.ok) {
     return new Response('Error: ' + await response.text(), { status: response.status });
   }
+
+  const rawBody = await response.text();
+  let result;
+  try {
+    result = JSON.parse(rawBody);
+  } catch (error) {
+    console.error('Failed to parse TGPH response:', rawBody);
+    return new Response(rawBody, {
+      status: 500,
+      headers: { 'Content-Type': 'application/json;charset=UTF-8' }
+    });
+  }
+
+  const src = Array.isArray(result)
+    ? result[0]?.src
+    : result?.src || result?.[0]?.src;
+
+  if (!src) {
+    console.error('TGPH upload succeeded but no src found:', result);
+    return new Response(JSON.stringify(result), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json;charset=UTF-8' }
+    });
+  }
+
+  const normalizedSrc = src.replace(/\\/g, '');
+  const imageUrl = `https://telegra.ph${normalizedSrc.startsWith('/') ? normalizedSrc : `/${normalizedSrc}`}`;
+
+  return new Response(imageUrl, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/plain',
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
 }

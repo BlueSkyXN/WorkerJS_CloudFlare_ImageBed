@@ -51,7 +51,7 @@ async function handleimg2ipfsRequest(request) {
       const fileName = result.Name;
       const fileHash = result.Hash;
       const fileSize = result.Size;
-      
+
       console.log(`文件名: ${fileName}`);
       console.log(`哈希值: ${fileHash}`);
       console.log(`大小: ${fileSize} 字节`);
@@ -68,7 +68,8 @@ async function handleimg2ipfsRequest(request) {
       });
     } else {
       console.error(`上传失败，状态码: ${response.status}`);
-      return new Response(`Upload failed with status: ${response.status}`, { status: response.status });
+      const errorBody = await response.text();
+      return new Response(errorBody, { status: response.status });
     }
   } catch (error) {
     console.error('Error:', error);

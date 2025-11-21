@@ -67,12 +67,12 @@ async function handle3001Request(request) {
       // 优先从 Header 获取 Token (统一使用 X-EXTRA-SECRET)，否则从 KV 获取
       let authorizationToken = request.headers.get('X-EXTRA-SECRET');
       if (!authorizationToken) {
-        authorizationToken = await WORKER_IMGBED.get('TOKEN_3001');
+        authorizationToken = await WORKER_IMGBED.get('3001_TOKEN');
       }
 
       if (!authorizationToken) {
-        console.error('Missing Secret: 3001 Token (KV: TOKEN_3001 or Header: X-EXTRA-SECRET)')
-        return new Response('Missing Secret: 3001 Token (KV: TOKEN_3001 or Header: X-EXTRA-SECRET)', {
+        console.error('Missing Secret: 3001 Token (KV: 3001_TOKEN or Header: X-EXTRA-SECRET)')
+        return new Response('Missing Secret: 3001 Token (KV: 3001_TOKEN or Header: X-EXTRA-SECRET)', {
           status: 500,
           headers: {
             'Content-Type': 'text/plain;charset=UTF-8',
