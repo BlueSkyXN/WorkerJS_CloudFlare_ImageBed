@@ -94,9 +94,9 @@
                     <option value="imgbb">ImgBB-免费图床</option>
                     <option value="ipfs">IPFS-去中心化多网关兼容</option>
                     <option value="s3ipfs">Filebase-IPFS</option>
-                    <option value="3001">3001-Freebuf-国内CDN-不提供账号请自行部署后端</option>
-                    <option value="aliex">AliEx-国内CDN国外Akamai-不提供账号请自行部署后端</option>
-                    <option value="nodeseek">NodeSeek图床</option>
+                    <option value="3001">3001-Freebuf-国内CDN</option>
+                    <option value="aliex">AliEx-国内CDN国外Akamai</option>
+                    <option value="nodeseek">NodeSeek图床-CloudFlare</option>
                 </select>
             </div>
             <div class="form-check mb-2">
@@ -173,14 +173,14 @@
 
         function setApiUrl() {
             const encodedApiEndpoint = '{{API_ENDPOINT_BASE64}}'; // 将"您的Base64编码字符串"替换为实际的Base64编码后的API地址
-            if (encodedApiEndpoint && encodedApiEndpoint !== '{{API_ENDPOINT_BASE64}}') {
+            if (encodedApiEndpoint && !encodedApiEndpoint.startsWith('{{')) {
                 const decodedApiEndpoint = atob(encodedApiEndpoint);
                 document.getElementById('apiUrl').value = decodedApiEndpoint;
             }
         }
         function setApiPassword() {
             const encodedApiPassword = '{{API_PASSWORD_BASE64}}'; // 将这里替换为您的Base64编码后的API密码
-            if (encodedApiPassword && encodedApiPassword !== '{{API_PASSWORD_BASE64}}') {
+            if (encodedApiPassword && !encodedApiPassword.startsWith('{{')) {
                 const decodedApiPassword = atob(encodedApiPassword); // 使用atob函数解码Base64字符串
                 document.getElementById('apiPassword').value = decodedApiPassword; // 设置解码后的密码到密码输入框
             }
