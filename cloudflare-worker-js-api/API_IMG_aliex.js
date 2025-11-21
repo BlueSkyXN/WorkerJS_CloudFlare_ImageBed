@@ -41,11 +41,12 @@ async function handleAliExpressRequest(request) {
     // 优先从 Header 获取 (统一使用 X-EXTRA-SECRET)，否则从 KV 获取
     let cookie = request.headers.get('X-EXTRA-SECRET');
     if (!cookie) {
-      cookie = await WORKER_IMGBED.get('ali_express_cookie');
+      cookie = await WORKER_IMGBED.get('ALIEXPRESS_COOKIE');
     }
+
     if (!cookie) {
-      console.error('Missing Secret: AliExpress Cookie (KV: ali_express_cookie or Header: X-EXTRA-SECRET)');
-      return new Response('Missing Secret: AliExpress Cookie (KV: ali_express_cookie or Header: X-EXTRA-SECRET)', {
+      console.error('Missing Secret: AliExpress Cookie (KV: ALIEXPRESS_COOKIE or Header: X-EXTRA-SECRET)');
+      return new Response('Missing Secret: AliExpress Cookie (KV: ALIEXPRESS_COOKIE or Header: X-EXTRA-SECRET)', {
         status: 500,
         headers: {
           'Content-Type': 'text/plain',

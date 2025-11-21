@@ -35,8 +35,10 @@ async function handles3filebaseRequest(request) {
 
         // 如果 Header 没有或无效，从 KV 获取
         if (!config) {
-            config = await WORKER_IMGBED.get('s3filebase_config', 'json');
-            console.log('[S3-Filebase] Configuration loaded from KV');
+            config = await WORKER_IMGBED.get('S3_FILEBASE_CONFIG', 'json');
+            if (config) {
+                console.log('[S3-Filebase] Configuration loaded from KV');
+            }
         }
         if (!config || !config.accessKey || !config.secretKey || !config.bucket) {
             console.error('[S3-Filebase] Invalid configuration:', {
@@ -45,7 +47,7 @@ async function handles3filebaseRequest(request) {
                 hasSecretKey: !!config?.secretKey,
                 hasBucket: !!config?.bucket
             });
-            return new Response('Missing Secret: S3 Config (KV: s3filebase_config or Header: X-EXTRA-SECRET)', { status: 500 });
+            return new Response('Missing Secret: S3 Config (KV: S3_FILEBASE_CONFIG or Header: X-EXTRA-SECRET)', { status: 500 });
         }
         console.log('[S3-Filebase] Configuration loaded successfully');
 

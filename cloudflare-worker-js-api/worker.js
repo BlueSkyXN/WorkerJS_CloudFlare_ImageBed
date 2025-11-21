@@ -246,12 +246,12 @@ async function handleAliExpressRequest(request) {
     // 优先从 Header 获取 (统一使用 X-EXTRA-SECRET)，否则从 KV 获取
     let cookie = request.headers.get('X-EXTRA-SECRET');
     if (!cookie) {
-      cookie = await WORKER_IMGBED.get('ali_express_cookie');
+      cookie = await WORKER_IMGBED.get('ALIEXPRESS_COOKIE');
     }
 
     if (!cookie) {
-      console.error('Missing Secret: AliExpress Cookie (KV: ali_express_cookie or Header: X-EXTRA-SECRET)');
-      return new Response('Missing Secret: AliExpress Cookie (KV: ali_express_cookie or Header: X-EXTRA-SECRET)', {
+      console.error('Missing Secret: AliExpress Cookie (KV: ALIEXPRESS_COOKIE or Header: X-EXTRA-SECRET)');
+      return new Response('Missing Secret: AliExpress Cookie (KV: ALIEXPRESS_COOKIE or Header: X-EXTRA-SECRET)', {
         status: 500,
         headers: {
           'Content-Type': 'text/plain',
@@ -393,12 +393,12 @@ async function handle3001Request(request) {
       // 优先从 Header 获取 Token (统一使用 X-EXTRA-SECRET)，否则从 KV 获取
       let authorizationToken = request.headers.get('X-EXTRA-SECRET');
       if (!authorizationToken) {
-        authorizationToken = await WORKER_IMGBED.get('3001_auth');
+        authorizationToken = await WORKER_IMGBED.get('TOKEN_3001');
       }
 
       if (!authorizationToken) {
-        console.error('Missing Secret: 3001 Token (KV: 3001_auth or Header: X-EXTRA-SECRET)');
-        return new Response('Missing Secret: 3001 Token (KV: 3001_auth or Header: X-EXTRA-SECRET)', {
+        console.error('Missing Secret: 3001 Token (KV: TOKEN_3001 or Header: X-EXTRA-SECRET)');
+        return new Response('Missing Secret: 3001 Token (KV: TOKEN_3001 or Header: X-EXTRA-SECRET)', {
           status: 500,
           headers: {
             'Content-Type': 'text/plain;charset=UTF-8',
@@ -563,7 +563,7 @@ async function handles3filebaseRequest(request) {
 
     // 如果 Header 没有或无效，从 KV 获取
     if (!config) {
-      config = await WORKER_IMGBED.get('s3filebase_config', 'json');
+      config = await WORKER_IMGBED.get('S3_FILEBASE_CONFIG', 'json');
       console.log('[S3-Filebase] Configuration loaded from KV');
     }
 
@@ -574,7 +574,7 @@ async function handles3filebaseRequest(request) {
         hasSecretKey: !!config?.secretKey,
         hasBucket: !!config?.bucket
       });
-      return new Response('Missing Secret: S3 Config (KV: s3filebase_config or Header: X-EXTRA-SECRET)', { status: 500 });
+      return new Response('Missing Secret: S3 Config (KV: S3_FILEBASE_CONFIG or Header: X-EXTRA-SECRET)', { status: 500 });
     }
     console.log('[S3-Filebase] Configuration validated successfully');
 

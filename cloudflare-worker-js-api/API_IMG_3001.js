@@ -67,18 +67,20 @@ async function handle3001Request(request) {
       // 优先从 Header 获取 Token (统一使用 X-EXTRA-SECRET)，否则从 KV 获取
       let authorizationToken = request.headers.get('X-EXTRA-SECRET');
       if (!authorizationToken) {
-        authorizationToken = await WORKER_IMGBED.get('3001_auth');
-        if (!authorizationToken) {
-          console.error('Missing Secret: 3001 Token (KV: 3001_auth or Header: X-EXTRA-SECRET)')
-          return new Response('Missing Secret: 3001 Token (KV: 3001_auth or Header: X-EXTRA-SECRET)', {
-            status: 500,
-            headers: {
-              'Content-Type': 'text/plain;charset=UTF-8',
-              ...corsHeaders,
-            },
-          })
-        }
+        authorizationToken = await WORKER_IMGBED.get('TOKEN_3001');
       }
+
+      if (!authorizationToken) {
+        console.error('Missing Secret: 3001 Token (KV: TOKEN_3001 or Header: X-EXTRA-SECRET)')
+        return new Response('Missing Secret: 3001 Token (KV: TOKEN_3001 or Header: X-EXTRA-SECRET)', {
+          status: 500,
+          headers: {
+            'Content-Type': 'text/plain;charset=UTF-8',
+            ...corsHeaders,
+          },
+        })
+      }
+
 
       // 构建上传表单数据，将 'image' 重命名为 'file'
       const uploadFormData = new FormData()
