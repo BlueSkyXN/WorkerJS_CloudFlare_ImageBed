@@ -1,4 +1,4 @@
-// Giithub @BlueSkyXN
+// GitHub @BlueSkyXN
 // Code: Modified based on the original
 // 仅供学习CloudFlare Worker开发使用，违规使用后果自负
 // License @GPLv3

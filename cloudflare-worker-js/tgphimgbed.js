@@ -92,23 +92,55 @@ addEventListener('fetch', event => {
         toggleSubUrls();
       });
   
+      // Helper function to create safe URL link element
+      function createUrlElement(url, includeButton = true, buttonId = null) {
+        const div = document.createElement('div');
+        const textNode = document.createTextNode('URL: ');
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.textContent = url;
+        
+        div.appendChild(textNode);
+        div.appendChild(link);
+        
+        if (includeButton) {
+          const button = document.createElement('button');
+          if (buttonId) {
+            button.id = buttonId;
+            button.className = 'copy-button';
+            button.dataset.url = url;
+          } else {
+            button.id = 'copyButton';
+          }
+          button.textContent = 'Copy';
+          div.appendChild(document.createTextNode(' '));
+          div.appendChild(button);
+        }
+        
+        return div;
+      }
+
       function toggleSubUrls() {
-        let resultHTML = '';
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = '';
+        
         if (document.getElementById('subOption').checked) {
           const urls = generateSubUrls(imageUrl);
           urls.forEach((url, index) => {
-            resultHTML += '<div>URL: <a href="' + url + '" target="_blank">' + url + '</a> <button class="copy-button" data-url="' + url + '" id="copyButton' + index + '">Copy</button></div>';
+            const urlElement = createUrlElement(url, true, 'copyButton' + index);
+            resultDiv.appendChild(urlElement);
           });
         } else {
-          resultHTML = 'URL: <a href="' + imageUrl + '" target="_blank">' + imageUrl + '</a> <button id="copyButton">Copy</button>';
+          const urlElement = createUrlElement(imageUrl, true);
+          resultDiv.appendChild(urlElement);
         }
-        document.getElementById('result').innerHTML = resultHTML;
       
         // 添加事件监听器
         const copyButtons = document.querySelectorAll('.copy-button');
         copyButtons.forEach((button, index) => {
           button.addEventListener('click', function() {
-            const urlToCopy = button.getAttribute('data-url');
+            const urlToCopy = button.dataset.url;
             navigator.clipboard.writeText(urlToCopy);
           });
         });
@@ -119,7 +151,7 @@ addEventListener('fetch', event => {
       }
       
     
-  
+
       function generateSubUrls(imageUrl) {
         return [
           imageUrl,

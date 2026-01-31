@@ -68,7 +68,14 @@
 
         function transformUrl() {
             const originalUrl = document.getElementById('inputUrl').value;
-            const fileName = originalUrl.match(/\/file\/(.+)$/)[1]; // 提取文件名
+            const match = originalUrl.match(/\/file\/(.+)$/);
+            
+            if (!match || !match[1]) {
+                alert('Invalid URL format. Please enter a valid TGPH URL containing /file/...');
+                return;
+            }
+            
+            const fileName = match[1]; // 提取文件名
 
             const prefixes = [
                 'https://telegraph.cachefly.net/file/',

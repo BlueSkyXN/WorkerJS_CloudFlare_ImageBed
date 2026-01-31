@@ -65,7 +65,18 @@
 
         function transformUrl() {
             const originalUrl = document.getElementById('inputUrl').value;
+            
+            if (!originalUrl || !originalUrl.includes('://')) {
+                alert('Invalid URL format. Please enter a valid URL starting with http:// or https://');
+                return;
+            }
+            
             const urlPart = originalUrl.split('://')[1]; // 提取https://之后的部分
+            
+            if (!urlPart) {
+                alert('Invalid URL format. Please enter a valid URL.');
+                return;
+            }
 
             const prefixes = [
                 'https://cdn.cdnjson.com/pic.html?url=https://',

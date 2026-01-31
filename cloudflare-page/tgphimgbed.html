@@ -61,15 +61,39 @@
             }
         });
 
+        // Helper function to escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         function processImage(imageUrl) {
-            document.getElementById('result').innerHTML = 'URL: <a href="' + imageUrl + '" target="_blank">' + imageUrl + '</a>';
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '';
+            
+            // Create safe link element
+            const urlText = document.createTextNode('URL: ');
+            const link = document.createElement('a');
+            link.href = imageUrl;
+            link.target = '_blank';
+            link.textContent = imageUrl;
+            resultDiv.appendChild(urlText);
+            resultDiv.appendChild(link);
+            
             document.getElementById('copyButton').style.display = 'inline';
 
             if (document.getElementById('subOption').checked) {
                 generateSubUrls(imageUrl).forEach(url => {
                     const urlElement = document.createElement('div');
-                    urlElement.innerHTML = 'URL: <a href="' + url + '" target="_blank">' + url + '</a>';
-                    document.getElementById('result').appendChild(urlElement);
+                    const urlLabel = document.createTextNode('URL: ');
+                    const subLink = document.createElement('a');
+                    subLink.href = url;
+                    subLink.target = '_blank';
+                    subLink.textContent = url;
+                    urlElement.appendChild(urlLabel);
+                    urlElement.appendChild(subLink);
+                    resultDiv.appendChild(urlElement);
                 });
             }
 

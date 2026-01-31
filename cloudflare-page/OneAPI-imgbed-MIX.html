@@ -267,9 +267,25 @@
         }
         function copyUrl(button) {
             const copyText = button.parentElement.nextElementSibling.querySelector('input');
-            copyText.select();
-            copyText.setSelectionRange(0, 99999);
-            document.execCommand('copy');
+            const textToCopy = copyText.value;
+            
+            // Use modern clipboard API with fallback
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    // Optional: show feedback
+                }).catch(err => {
+                    console.error('Failed to copy:', err);
+                    // Fallback to older method
+                    copyText.select();
+                    copyText.setSelectionRange(0, 99999);
+                    document.execCommand('copy');
+                });
+            } else {
+                // Fallback for older browsers
+                copyText.select();
+                copyText.setSelectionRange(0, 99999);
+                document.execCommand('copy');
+            }
         }
     </script>
 </body>
