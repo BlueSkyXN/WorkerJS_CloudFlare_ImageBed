@@ -61,13 +61,6 @@
             }
         });
 
-        // Helper function to escape HTML to prevent XSS
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
         function processImage(imageUrl) {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = '';
