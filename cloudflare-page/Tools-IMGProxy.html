@@ -64,9 +64,10 @@
         });
 
         function transformUrl() {
-            const originalUrl = document.getElementById('inputUrl').value;
+            const originalUrl = document.getElementById('inputUrl').value.trim();
             
-            if (!originalUrl || !originalUrl.includes('://')) {
+            // Validate URL format with proper HTTP/HTTPS protocol check
+            if (!originalUrl || (!originalUrl.startsWith('http://') && !originalUrl.startsWith('https://'))) {
                 alert('Invalid URL format. Please enter a valid URL starting with http:// or https://');
                 return;
             }
