@@ -86,24 +86,24 @@
             const copyText = document.getElementById('resultUrl');
             const textToCopy = copyText.value;
             
+            // Fallback copy method for older browsers
+            function fallbackCopy() {
+                copyText.select();
+                copyText.setSelectionRange(0, 99999);
+                document.execCommand('copy');
+                alert('URL 已复制');
+            }
+            
             // Use modern clipboard API with fallback
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(textToCopy).then(() => {
                     alert('URL 已复制');
                 }).catch(err => {
                     console.error('Failed to copy:', err);
-                    // Fallback to older method
-                    copyText.select();
-                    copyText.setSelectionRange(0, 99999);
-                    document.execCommand('copy');
-                    alert('URL 已复制');
+                    fallbackCopy();
                 });
             } else {
-                // Fallback for older browsers
-                copyText.select();
-                copyText.setSelectionRange(0, 99999);
-                document.execCommand('copy');
-                alert('URL 已复制');
+                fallbackCopy();
             }
         }
     </script>

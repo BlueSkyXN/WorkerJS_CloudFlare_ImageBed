@@ -269,22 +269,23 @@
             const copyText = button.parentElement.nextElementSibling.querySelector('input');
             const textToCopy = copyText.value;
             
+            // Fallback copy method for older browsers
+            function fallbackCopy() {
+                copyText.select();
+                copyText.setSelectionRange(0, 99999);
+                document.execCommand('copy');
+            }
+            
             // Use modern clipboard API with fallback
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(textToCopy).then(() => {
                     // Optional: show feedback
                 }).catch(err => {
                     console.error('Failed to copy:', err);
-                    // Fallback to older method
-                    copyText.select();
-                    copyText.setSelectionRange(0, 99999);
-                    document.execCommand('copy');
+                    fallbackCopy();
                 });
             } else {
-                // Fallback for older browsers
-                copyText.select();
-                copyText.setSelectionRange(0, 99999);
-                document.execCommand('copy');
+                fallbackCopy();
             }
         }
     </script>

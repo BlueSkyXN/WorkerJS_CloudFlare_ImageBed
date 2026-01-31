@@ -92,7 +92,13 @@ addEventListener('fetch', event => {
         toggleSubUrls();
       });
   
-      // Helper function to create safe URL link element
+      /**
+       * Creates a safe URL link element with optional copy button
+       * @param {string} url - The URL to display and link to
+       * @param {boolean} includeButton - Whether to include a copy button (default: true)
+       * @param {string|null} buttonId - Optional button ID for sub-URL buttons
+       * @returns {HTMLDivElement} A div element containing the URL link and optional button
+       */
       function createUrlElement(url, includeButton = true, buttonId = null) {
         const div = document.createElement('div');
         const textNode = document.createTextNode('URL: ');
@@ -109,10 +115,11 @@ addEventListener('fetch', event => {
           if (buttonId) {
             button.id = buttonId;
             button.className = 'copy-button';
-            button.dataset.url = url;
           } else {
             button.id = 'copyButton';
           }
+          // Always set data-url so copy handlers work consistently
+          button.dataset.url = url;
           button.textContent = 'Copy';
           div.appendChild(document.createTextNode(' '));
           div.appendChild(button);
@@ -136,17 +143,15 @@ addEventListener('fetch', event => {
           resultDiv.appendChild(urlElement);
         }
       
-        // 添加事件监听器
-        const copyButtons = document.querySelectorAll('.copy-button');
-        copyButtons.forEach((button, index) => {
+        // 添加事件监听器 - use unified handler for all buttons
+        const allCopyButtons = document.querySelectorAll('button[data-url]');
+        allCopyButtons.forEach(button => {
           button.addEventListener('click', function() {
             const urlToCopy = button.dataset.url;
-            navigator.clipboard.writeText(urlToCopy);
+            if (urlToCopy) {
+              navigator.clipboard.writeText(urlToCopy);
+            }
           });
-        });
-      
-        document.getElementById('copyButton')?.addEventListener('click', function() {
-          navigator.clipboard.writeText(imageUrl);
         });
       }
       
