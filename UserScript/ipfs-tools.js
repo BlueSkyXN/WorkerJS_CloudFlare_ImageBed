@@ -41,10 +41,15 @@ const CONFIG = {
 };
 
 // HTML 模板
+// Helper: escape string for safe embedding in HTML
+function escapeHtml(str) {
+    return str.replace(/[<>&"']/g, c => `&#${c.charCodeAt(0)};`);
+}
+
 function getViewTemplate(cid, imageUrl) {
     // Safely encode values for embedding in HTML script blocks
     const safeImageUrl = JSON.stringify(imageUrl).replace(/</g, '\\u003c');
-    const safeCid = cid.replace(/[<>&"']/g, c => `&#${c.charCodeAt(0)};`);
+    const safeCid = escapeHtml(cid);
     return `
         <!DOCTYPE html>
         <html>
@@ -85,7 +90,7 @@ function getViewTemplate(cid, imageUrl) {
 }
 
 function getUrlsTemplate(cid, urls) {
-    const safeCid = cid.replace(/[<>&"']/g, c => `&#${c.charCodeAt(0)};`);
+    const safeCid = escapeHtml(cid);
     return `
         <!DOCTYPE html>
         <html>
@@ -118,6 +123,9 @@ function getUrlsTemplate(cid, urls) {
                     copyBtn.addEventListener('click', function() {
                         navigator.clipboard.writeText(url).then(function() {
                             alert('URL copied!');
+                        }).catch(function(err) {
+                            console.error('Failed to copy:', err);
+                            alert('Failed to copy URL');
                         });
                     });
 
