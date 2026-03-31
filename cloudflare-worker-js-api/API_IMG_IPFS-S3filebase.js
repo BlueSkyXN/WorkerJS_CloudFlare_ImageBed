@@ -10,7 +10,7 @@
 async function handles3filebaseRequest(request) {
     console.log('[S3-Filebase] Starting request handling');
 
-    if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
+    if (request.method !== 'POST' || !request.headers.get('Content-Type')?.includes('multipart/form-data')) {
         console.error('[S3-Filebase] Invalid request method or content type:', {
             method: request.method,
             contentType: request.headers.get('Content-Type')

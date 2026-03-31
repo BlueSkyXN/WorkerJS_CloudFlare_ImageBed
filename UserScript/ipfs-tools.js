@@ -60,7 +60,7 @@ function getViewTemplate(cid, imageUrl) {
             <h1>IPFS Content Viewer</h1>
             <div class="meta">CID: ${cid}</div>
             <div class="content">
-                <img src="${imageUrl}" alt="IPFS Content" onerror="this.onerror=null; this.parentElement.innerHTML='<video src=\\'${imageUrl}\\' controls>不支持的内容格式</video>'">
+                <img src="${imageUrl}" alt="IPFS Content" onerror="this.onerror=null; var v=document.createElement('video'); v.src=this.src; v.controls=true; v.textContent='不支持的内容格式'; this.parentElement.replaceChild(v, this);">
             </div>
         </body>
         </html>
