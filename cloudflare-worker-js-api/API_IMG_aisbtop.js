@@ -3,7 +3,7 @@ addEventListener('fetch', event => {
   })
   
   async function handleaisbtopRequest(request) {
-    if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
+    if (request.method !== 'POST' || !request.headers.get('Content-Type')?.includes('multipart/form-data')) {
       return new Response('Invalid request', { status: 400 });
     }
   

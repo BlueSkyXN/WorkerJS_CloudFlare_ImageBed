@@ -95,7 +95,8 @@ const htmlContent = `
             reader.onloadend = async function() {
                 try {
                     const base64String = reader.result.replace(/^data:.+;base64,/, '');
-                    const response = await fetch('https://58imgbed.yourname.workers.dev/', {
+                    // Use current origin to make the worker URL dynamic
+                    const response = await fetch(window.location.origin + '/', {
                         method: 'POST',
                         body: JSON.stringify({ base64Data: base64String })
                     });

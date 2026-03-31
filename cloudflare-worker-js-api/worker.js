@@ -180,7 +180,7 @@ async function handleimg2ipfsRequest(request) {
 
 
 async function handleTgphimgRequest(request) {
-  if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
+  if (request.method !== 'POST' || !request.headers.get('Content-Type')?.includes('multipart/form-data')) {
     return new Response('Invalid request', { status: 400 });
   }
 
@@ -560,7 +560,7 @@ async function handle3001Request(request) {
 async function handles3filebaseRequest(request) {
   console.log('[S3-Filebase] Starting request handling');
 
-  if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
+  if (request.method !== 'POST' || !request.headers.get('Content-Type')?.includes('multipart/form-data')) {
     console.error('[S3-Filebase] Invalid request method or content type:', {
       method: request.method,
       contentType: request.headers.get('Content-Type')
@@ -957,7 +957,7 @@ async function handleImgbbRequest(request) {
 // DLink 图床 API 接口
 async function handleDlinkRequest(request) {
   // 确认请求方法为 POST 并且内容类型正确
-  if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
+  if (request.method !== 'POST' || !request.headers.get('Content-Type')?.includes('multipart/form-data')) {
     return new Response('Invalid request', { status: 400 });
   }
 

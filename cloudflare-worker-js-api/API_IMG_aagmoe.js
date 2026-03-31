@@ -5,7 +5,7 @@ addEventListener('fetch', event => {
 async function handleaagmoeRequest(request) {
   try {
     // 确认请求方法为 POST 并且内容类型正确
-    if (request.method !== 'POST' || !request.headers.get('Content-Type').includes('multipart/form-data')) {
+    if (request.method !== 'POST' || !request.headers.get('Content-Type')?.includes('multipart/form-data')) {
       return new Response('Invalid request', { status: 400 });
     }
 

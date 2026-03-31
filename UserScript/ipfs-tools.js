@@ -41,12 +41,20 @@ const CONFIG = {
 };
 
 // HTML 模板
+// Helper: escape string for safe embedding in HTML
+function escapeHtml(str) {
+    return str.replace(/[<>&"']/g, c => `&#${c.charCodeAt(0)};`);
+}
+
 function getViewTemplate(cid, imageUrl) {
+    // Safely encode values for embedding in HTML script blocks
+    const safeImageUrl = JSON.stringify(imageUrl).replace(/</g, '\\u003c');
+    const safeCid = escapeHtml(cid);
     return `
         <!DOCTYPE html>
         <html>
         <head>
-            <title>IPFS Content Viewer - ${cid}</title>
+            <title>IPFS Content Viewer - ${safeCid}</title>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
@@ -58,21 +66,36 @@ function getViewTemplate(cid, imageUrl) {
         </head>
         <body>
             <h1>IPFS Content Viewer</h1>
-            <div class="meta">CID: ${cid}</div>
-            <div class="content">
-                <img src="${imageUrl}" alt="IPFS Content" onerror="this.onerror=null; this.parentElement.innerHTML='<video src=\\'${imageUrl}\\' controls>不支持的内容格式</video>'">
-            </div>
+            <div class="meta">CID: ${safeCid}</div>
+            <div class="content" id="ipfs-content"></div>
+            <script>
+                function handleImageError(img) {
+                    img.onerror = null;
+                    var video = document.createElement('video');
+                    video.src = img.src;
+                    video.controls = true;
+                    video.textContent = '不支持的内容格式';
+                    img.parentElement.replaceChild(video, img);
+                }
+                var container = document.getElementById('ipfs-content');
+                var img = document.createElement('img');
+                img.alt = 'IPFS Content';
+                img.onerror = function() { handleImageError(this); };
+                img.src = ${safeImageUrl};
+                container.appendChild(img);
+            </script>
         </body>
         </html>
     `;
 }
 
 function getUrlsTemplate(cid, urls) {
+    const safeCid = escapeHtml(cid);
     return `
         <!DOCTYPE html>
         <html>
         <head>
-            <title>IPFS Gateway URLs - ${cid}</title>
+            <title>IPFS Gateway URLs - ${safeCid}</title>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
@@ -85,21 +108,36 @@ function getUrlsTemplate(cid, urls) {
         </head>
         <body>
             <h1>IPFS Gateway URLs</h1>
-            <div class="meta">CID: ${cid}</div>
-            <div class="url-list">
-                ${urls.map(url => `
-                    <div class="url-item">
-                        <button class="copy-btn" onclick="copyToClipboard('${url}')">Copy</button>
-                        <a href="${url}" target="_blank">${url}</a>
-                    </div>
-                `).join('')}
-            </div>
+            <div class="meta">CID: ${safeCid}</div>
+            <div class="url-list" id="url-list"></div>
             <script>
-                function copyToClipboard(text) {
-                    navigator.clipboard.writeText(text).then(() => {
-                        alert('URL copied!');
+                var urls = ${JSON.stringify(urls).replace(/</g, '\\u003c')};
+                var list = document.getElementById('url-list');
+                urls.forEach(function(url) {
+                    var item = document.createElement('div');
+                    item.className = 'url-item';
+
+                    var copyBtn = document.createElement('button');
+                    copyBtn.className = 'copy-btn';
+                    copyBtn.textContent = 'Copy';
+                    copyBtn.addEventListener('click', function() {
+                        navigator.clipboard.writeText(url).then(function() {
+                            alert('URL copied!');
+                        }).catch(function(err) {
+                            console.error('Failed to copy:', err);
+                            alert('Failed to copy URL');
+                        });
                     });
-                }
+
+                    var link = document.createElement('a');
+                    link.href = url;
+                    link.target = '_blank';
+                    link.textContent = url;
+
+                    item.appendChild(copyBtn);
+                    item.appendChild(link);
+                    list.appendChild(item);
+                });
             </script>
         </body>
         </html>
